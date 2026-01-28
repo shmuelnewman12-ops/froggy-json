@@ -109,12 +109,6 @@
             height: 120px;
             border-radius: 50%;
             border: 3px solid var(--yt-red);
-            cursor: pointer;
-        }
-
-        .channel-avatar:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
         }
 
         .channel-info h2 {
@@ -439,7 +433,7 @@
         
         <div class="channel-card">
             <div class="channel-header">
-                <img id="channelAvatar" class="channel-avatar" src="" alt="Channel" onclick="openChannel()">
+                <img id="channelAvatar" class="channel-avatar" src="" alt="Channel">
                 <div class="channel-info">
                     <h2 id="channelTitle">Channel Name</h2>
                     <div class="channel-handle" id="channelHandle">@handle</div>
@@ -448,9 +442,9 @@
             </div>
 
             <div class="videos-section">
-                <div class="section-title">📺 Recent Videos</div>
+                <div class="section-title">📺 Channel Preview</div>
                 <div class="videos-grid" id="videosGrid">
-                    <!-- Videos will load here -->
+                    <!-- Channel visuals will load here -->
                 </div>
             </div>
         </div>
@@ -580,67 +574,207 @@
 
         function loadVideos(ch) {
             const grid = document.getElementById('videosGrid');
-            grid.innerHTML = '<p style="text-align:center;color:var(--yt-subtext);padding:40px">Loading videos...</p>';
+            grid.innerHTML = '<p style="text-align:center;color:var(--yt-subtext);padding:40px">Loading channel preview...</p>';
             
-            // Try to get channel ID
+            const channelUrl = ch.url || `https://youtube.com/${ch.subscribers}`;
+            
+            // Try multiple methods to get channel avatar and info
+            tryFetchChannelAvatar(channelUrl, ch);
+        }
+
+        async function tryFetchChannelAvatar(channelUrl, ch) {
+            const grid = document.getElementById('videosGrid');
+            
+            // Method 1: Try noembed.com (gets thumbnail from any YouTube URL)
+            try {
+                const response = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(channelUrl)}`);
+                const data = await response.json();
+                
+                if (data.thumbnail_url) {
+                    // Update the main avatar with real YouTube avatar
+                    document.getElementById('channelAvatar').src = data.thumbnail_url;
+                    
+                    // Show channel preview images
+                    displayChannelPreviews(data, channelUrl);
+                    return;
+                }
+            } catch (e) {
+                console.log('noembed failed:', e);
+            }
+            
+            // Method 2: Try to construct YouTube avatar URL directly
             const handle = ch.subscribers?.replace('@', '') || '';
-            const channelId = ch.url?.includes('/channel/') ? ch.url.split('/channel/')[1].split('/')[0] : handle;
             
-            // Try YouTube RSS feed via CORS proxy
-            fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`)}`)
-                .then(res => res.text())
-                .then(xml => {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(xml, 'text/xml');
-                    const entries = doc.querySelectorAll('entry');
-                    
-                    if (entries.length === 0) {
-                        showPlaceholders();
-                        return;
-                    }
-                    
-                    const videos = Array.from(entries).slice(0, 6).map(entry => ({
-                        id: entry.querySelector('videoId')?.textContent || '',
-                        title: entry.querySelector('title')?.textContent || 'Video',
-                        date: formatDate(entry.querySelector('published')?.textContent || '')
-                    }));
-                    
-                    displayVideos(videos);
-                })
-                .catch(err => {
-                    console.log('RSS failed:', err);
-                    showPlaceholders();
-                });
+            // YouTube avatar URLs follow patterns
+            const avatarUrls = [
+                `https://yt3.ggpht.com/ytc/${handle}`,
+                `https://yt3.googleusercontent.com/ytc/${handle}`,
+            ];
+            
+            // Try each URL
+            let foundAvatar = false;
+            for (const url of avatarUrls) {
+                try {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    await new Promise((resolve, reject) => {
+                        img.onload = () => { 
+                            document.getElementById('channelAvatar').src = url;
+                            foundAvatar = true;
+                            resolve(); 
+                        };
+                        img.onerror = reject;
+                        img.src = url;
+                    });
+                    if (foundAvatar) break;
+                } catch (e) {
+                    continue;
+                }
+            }
+            
+            // Method 3: Use YouTube's public JSON endpoint
+            try {
+                const jsonUrl = `${channelUrl}/about`;
+                const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(jsonUrl)}`);
+                const data = await response.json();
+                const html = data.contents;
+                
+                // Extract avatar from HTML
+                const avatarMatch = html.match(/"avatar":{"thumbnails":\[{"url":"([^"]+)"/);
+                if (avatarMatch && avatarMatch[1]) {
+                    const avatarUrl = avatarMatch[1].replace(/\\u0026/g, '&');
+                    document.getElementById('channelAvatar').src = avatarUrl;
+                    foundAvatar = true;
+                }
+                
+                // Extract banner/header
+                const bannerMatch = html.match(/"banner":{"thumbnails":\[{"url":"([^"]+)"/);
+                if (bannerMatch && bannerMatch[1]) {
+                    const bannerUrl = bannerMatch[1].replace(/\\u0026/g, '&');
+                    displayChannelPreviewsWithBanner(avatarMatch?.[1]?.replace(/\\u0026/g, '&'), bannerUrl);
+                    return;
+                }
+            } catch (e) {
+                console.log('JSON endpoint failed:', e);
+            }
+            
+            // Fallback: Show channel preview embeds
+            displayChannelPreviews(null, channelUrl);
         }
 
-        function displayVideos(videos) {
+        function displayChannelPreviews(data, channelUrl) {
             const grid = document.getElementById('videosGrid');
-            grid.innerHTML = videos.map(v => `
-                <div class="video-card" onclick="window.open('https://youtube.com/watch?v=${v.id}', '_blank')">
+            const avatar = data?.thumbnail_url || document.getElementById('channelAvatar').src;
+            
+            // Create visual previews showing the channel in different contexts
+            grid.innerHTML = `
+                <div class="video-card">
                     <div class="video-thumbnail">
-                        <img src="https://i.ytimg.com/vi/${v.id}/mqdefault.jpg" alt="${v.title}">
+                        <img src="${avatar}" alt="Channel Avatar" style="object-fit: contain; padding: 20px; background: #282828;">
                     </div>
                     <div class="video-info">
-                        <div class="video-title">${v.title}</div>
-                        <div class="video-date">${v.date}</div>
+                        <div class="video-title">Channel Avatar</div>
+                        <div class="video-date">Profile Picture</div>
                     </div>
                 </div>
-            `).join('');
+                
+                <div class="video-card" onclick="window.open('${channelUrl}', '_blank')">
+                    <div class="video-thumbnail">
+                        <img src="${avatar}" alt="Channel" style="object-fit: cover; filter: brightness(0.8);">
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">View Full Channel</div>
+                        <div class="video-date">Click to open YouTube</div>
+                    </div>
+                </div>
+                
+                <div class="video-card">
+                    <div class="video-thumbnail" style="background: linear-gradient(135deg, #FF0000 0%, #CC0000 100%); display: flex; align-items: center; justify-content: center;">
+                        <img src="${avatar}" alt="Channel" style="width: 80%; height: 80%; object-fit: contain; border-radius: 50%; border: 3px solid white;">
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">Profile Style 1</div>
+                        <div class="video-date">Red background</div>
+                    </div>
+                </div>
+                
+                <div class="video-card">
+                    <div class="video-thumbnail" style="background: linear-gradient(135deg, #282828 0%, #181818 100%); display: flex; align-items: center; justify-content: center;">
+                        <img src="${avatar}" alt="Channel" style="width: 80%; height: 80%; object-fit: contain; border-radius: 50%; border: 3px solid white;">
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">Profile Style 2</div>
+                        <div class="video-date">Dark background</div>
+                    </div>
+                </div>
+                
+                <div class="video-card">
+                    <div class="video-thumbnail" style="background: white; display: flex; align-items: center; justify-content: center;">
+                        <img src="${avatar}" alt="Channel" style="width: 80%; height: 80%; object-fit: contain; border-radius: 50%; border: 3px solid #FF0000;">
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">Profile Style 3</div>
+                        <div class="video-date">Light background</div>
+                    </div>
+                </div>
+                
+                <div class="video-card">
+                    <div class="video-thumbnail" style="background: linear-gradient(45deg, #FF0000 0%, #0000FF 100%); display: flex; align-items: center; justify-content: center;">
+                        <img src="${avatar}" alt="Channel" style="width: 90%; height: 90%; object-fit: contain;">
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">Full Size Preview</div>
+                        <div class="video-date">Large view</div>
+                    </div>
+                </div>
+            `;
         }
 
-        function showPlaceholders() {
+        function displayChannelPreviewsWithBanner(avatar, banner) {
             const grid = document.getElementById('videosGrid');
-            grid.innerHTML = Array.from({length: 6}, (_, i) => `
-                <div class="video-card" onclick="openChannel()">
-                    <div class="video-thumbnail">
-                        <img src="https://via.placeholder.com/320x180/282828/AAAAAA?text=Click+to+View" alt="Video">
+            
+            grid.innerHTML = `
+                <div class="video-card" style="grid-column: 1 / -1;">
+                    <div class="video-thumbnail" style="height: 150px;">
+                        <img src="${banner}" alt="Channel Banner" style="object-fit: cover;">
                     </div>
                     <div class="video-info">
-                        <div class="video-title">Click to view channel on YouTube</div>
-                        <div class="video-date">Recent video</div>
+                        <div class="video-title">Channel Banner</div>
+                        <div class="video-date">Header Image</div>
                     </div>
                 </div>
-            `).join('');
+                
+                <div class="video-card">
+                    <div class="video-thumbnail">
+                        <img src="${avatar}" alt="Channel Avatar" style="object-fit: contain; padding: 20px; background: #282828;">
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">Channel Avatar</div>
+                        <div class="video-date">Profile Picture</div>
+                    </div>
+                </div>
+                
+                <div class="video-card">
+                    <div class="video-thumbnail" style="background: linear-gradient(135deg, #FF0000 0%, #CC0000 100%); display: flex; align-items: center; justify-content: center;">
+                        <img src="${avatar}" alt="Channel" style="width: 80%; height: 80%; object-fit: contain; border-radius: 50%; border: 3px solid white;">
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">Large Avatar</div>
+                        <div class="video-date">Circular style</div>
+                    </div>
+                </div>
+                
+                <div class="video-card">
+                    <div class="video-thumbnail" style="position: relative;">
+                        <img src="${banner}" alt="Banner" style="object-fit: cover; filter: brightness(0.6);">
+                        <img src="${avatar}" alt="Avatar" style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); width: 50px; height: 50px; border-radius: 50%; border: 3px solid white; object-fit: cover;">
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">Combined View</div>
+                        <div class="video-date">Banner + Avatar</div>
+                    </div>
+                </div>
+            `;
         }
 
         function formatDate(dateStr) {
@@ -656,10 +790,6 @@
             } catch {
                 return '';
             }
-        }
-
-        function openChannel() {
-            document.getElementById('channelLink').click();
         }
 
         function decide(action) {
