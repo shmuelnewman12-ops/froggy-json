@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Channel Verifier Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#FF0000">
+    <style>
+        :root {
+            --yt-red: #FF0000;
+            --yt-dark: #0F0F0F;
+            --yt-darker: #0A0A0A;
+            --yt-gray: #272727;
+            --yt-light-gray: #3F3F3F;
+            --yt-text: #F1F1F1;
+            --yt-subtext: #AAAAAA;
+            --success: #00D856;
+            --warning: #FFA500;
+            --danger: #FF4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Syne', sans-serif;
+            background: var(--yt-darker);
+            color: var(--yt-text);
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Header with progress bar */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--yt-dark);
+            border-bottom: 1px solid var(--yt-gray);
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .progress-bar-container {
+            height: 4px;
+            background: var(--yt-gray);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--yt-red), #FF6B6B);
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--yt-red);
+            letter-spacing: -0.5px;
+        }
+
+        .progress-info {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            color: var(--yt-subtext);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .progress-info span {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stats-badge {
+            background: var(--yt-gray);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .stats-badge.good { color: var(--success); }
+        .stats-badge.bad { color: var(--danger); }
+        .stats-badge.review { color: var(--warning); }
+
+        /* Main content */
+        .main-content {
+            max-width: 1200px;
+            margin: 80px auto 0;
+            padding: 40px 24px;
+            display: none;
+        }
+
+        .artist-section {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .artist-name {
+            font-size: 56px;
+            font-weight: 800;
+            letter-spacing: -2px;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #fff 0%, #aaa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .artist-meta {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--yt-subtext);
+        }
+
+        /* Channel Card */
+        .channel-container {
+            background: var(--yt-dark);
+            border-radius: 16px;
+            padding: 40px;
+            border: 2px solid var(--yt-gray);
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .channel-container:hover {
+            border-color: var(--yt-light-gray);
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        .channel-visual {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 30px;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .thumbnail-section {
+            position: relative;
+        }
+
+        .channel-thumbnail {
+            width: 280px;
+            height: 157px;
+            border-radius: 12px;
+            object-fit: cover;
+            background: var(--yt-gray);
+            border: 3px solid var(--yt-gray);
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .channel-thumbnail:hover {
+            transform: scale(1.02);
+            border-color: var(--yt-red);
+            box-shadow: 0 12px 32px rgba(255, 0, 0, 0.3);
+        }
+
+        .thumbnail-fallback {
+            width: 280px;
+            height: 157px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--yt-gray) 0%, var(--yt-light-gray) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 64px;
+            border: 3px solid var(--yt-gray);
+        }
+
+        .loading-thumbnail {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loading-thumbnail::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            to {
+                left: 100%;
+            }
+        }
+
+        .channel-info {
+            text-align: left;
+        }
+
+        .channel-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            line-height: 1.2;
+            color: var(--yt-text);
+        }
+
+        .channel-handle {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--yt-subtext);
+            font-size: 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .verified-badge {
+            width: 18px;
+            height: 18px;
+            background: var(--yt-subtext);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+        }
+
+        .channel-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--yt-red);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            padding: 10px 18px;
+            background: rgba(255, 0, 0, 0.1);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            margin-top: 12px;
+        }
+
+        .channel-link:hover {
+            background: rgba(255, 0, 0, 0.2);
+            transform: translateX(4px);
+        }
+
+        /* Action buttons */
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .action-btn {
+            padding: 20px 24px;
+            border: 2px solid;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Syne', sans-serif;
+            position: relative;
+            overflow: hidden;
+            background: var(--yt-dark);
+        }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .action-btn:hover::before {
+            left: 100%;
+        }
+
+        .action-btn:active {
+            transform: scale(0.97);
+        }
+
+        .action-btn.good {
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .action-btn.good:hover {
+            background: var(--success);
+            color: var(--yt-dark);
+            box-shadow: 0 8px 24px rgba(0, 216, 86, 0.4);
+        }
+
+        .action-btn.bad {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .action-btn.bad:hover {
+            background: var(--danger);
+            color: var(--yt-dark);
+            box-shadow: 0 8px 24px rgba(255, 68, 68, 0.4);
+        }
+
+        .action-btn.review {
+            border-color: var(--warning);
+            color: var(--warning);
+        }
+
+        .action-btn.review:hover {
+            background: var(--warning);
+            color: var(--yt-dark);
+            box-shadow: 0 8px 24px rgba(255, 165, 0, 0.4);
+        }
+
+        .action-btn.skip {
+            border-color: var(--yt-light-gray);
+            color: var(--yt-subtext);
+        }
+
+        .action-btn.skip:hover {
+            background: var(--yt-light-gray);
+            color: var(--yt-text);
+        }
+
+        .btn-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-icon {
+            font-size: 24px;
+        }
+
+        .btn-label {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .btn-key {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            opacity: 0.6;
+        }
+
+        /* Quick stats sidebar */
+        .quick-stats {
+            background: var(--yt-dark);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--yt-gray);
+            margin-bottom: 30px;
+        }
+
+        .quick-stats h3 {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--yt-subtext);
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 12px;
+            background: var(--yt-darker);
+            border-radius: 8px;
+        }
+
+        .stat-number {
+            font-size: 28px;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-number.good { color: var(--success); }
+        .stat-number.bad { color: var(--danger); }
+        .stat-number.review { color: var(--warning); }
+        .stat-number.pending { color: var(--yt-subtext); }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--yt-subtext);
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Loading state */
+        .loading-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px;
+        }
+
+        .loader {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--yt-gray);
+            border-top-color: var(--yt-red);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 24px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 18px;
+            color: var(--yt-subtext);
+            margin-bottom: 12px;
+        }
+
+        .upload-area {
+            margin-top: 32px;
+            padding: 60px;
+            border: 3px dashed var(--yt-gray);
+            border-radius: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            max-width: 500px;
+        }
+
+        .upload-area:hover {
+            border-color: var(--yt-red);
+            background: rgba(255, 0, 0, 0.05);
+        }
+
+        .upload-area.dragging {
+            border-color: var(--yt-red);
+            background: rgba(255, 0, 0, 0.1);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .upload-area input {
+            display: none;
+        }
+
+        /* Completion screen */
+        .completion-screen {
+            display: none;
+            max-width: 900px;
+            margin: 80px auto 0;
+            padding: 60px 40px;
+            text-align: center;
+        }
+
+        .completion-icon {
+            font-size: 120px;
+            margin-bottom: 24px;
+            animation: celebrate 0.8s ease-out;
+        }
+
+        @keyframes celebrate {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(-10deg) scale(1.1); }
+            75% { transform: rotate(10deg) scale(1.1); }
+        }
+
+        .completion-title {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--yt-red) 0%, #FF6B6B 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .completion-subtitle {
+            font-size: 18px;
+            color: var(--yt-subtext);
+            margin-bottom: 48px;
+        }
+
+        .final-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+            margin-bottom: 48px;
+        }
+
+        .final-stat-card {
+            background: var(--yt-dark);
+            padding: 32px;
+            border-radius: 16px;
+            border: 2px solid var(--yt-gray);
+        }
+
+        .final-stat-number {
+            font-size: 56px;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 8px;
+        }
+
+        .final-stat-label {
+            font-size: 14px;
+            color: var(--yt-subtext);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .primary-btn {
+            padding: 18px 36px;
+            background: var(--yt-red);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Syne', sans-serif;
+        }
+
+        .primary-btn:hover {
+            background: #CC0000;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(255, 0, 0, 0.4);
+        }
+
+        .secondary-btn {
+            padding: 18px 36px;
+            background: var(--yt-dark);
+            color: var(--yt-text);
+            border: 2px solid var(--yt-gray);
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Syne', sans-serif;
+        }
+
+        .secondary-btn:hover {
+            border-color: var(--yt-light-gray);
+            background: var(--yt-gray);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .progress-info {
+                flex-direction: column;
+                gap: 8px;
+                font-size: 12px;
+            }
+
+            .artist-name {
+                font-size: 36px;
+            }
+
+            .channel-visual {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .channel-thumbnail,
+            .thumbnail-fallback {
+                width: 100%;
+                max-width: 400px;
+                margin: 0 auto;
+            }
+
+            .channel-info {
+                text-align: center;
+            }
+
+            .channel-handle {
+                justify-content: center;
+            }
+
+            .actions {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .stat-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .final-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .primary-btn,
+            .secondary-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Bar with Progress -->
+    <div class="top-bar">
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="header-content">
+            <div class="logo">YT VERIFIER</div>
+            <div class="progress-info">
+                <span id="currentProgress">0 / 0</span>
+                <span class="stats-badge good" id="goodCount">✓ 0</span>
+                <span class="stats-badge bad" id="badCount">✗ 0</span>
+                <span class="stats-badge review" id="reviewCount">? 0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loader"></div>
+        <div class="loading-text">Initializing...</div>
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📁</div>
+            <h3>Drop your JSON file here</h3>
+            <p style="color: var(--yt-subtext); margin-top: 8px; font-size: 14px;">or click to browse</p>
+            <input type="file" id="fileInput" accept=".json">
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Quick Stats -->
+        <div class="quick-stats">
+            <h3>Session Progress</h3>
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <div class="stat-number good" id="sessionGood">0</div>
+                    <div class="stat-label">Good</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number bad" id="sessionBad">0</div>
+                    <div class="stat-label">Bad</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number review" id="sessionReview">0</div>
+                    <div class="stat-label">Review</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number pending" id="sessionPending">0</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Artist Section -->
+        <div class="artist-section">
+            <div class="artist-name" id="artistName">Artist Name</div>
+            <div class="artist-meta" id="artistMeta">Channel verification</div>
+        </div>
+
+        <!-- Channel Container -->
+        <div class="channel-container" id="channelContainer">
+            <div class="channel-visual">
+                <div class="thumbnail-section">
+                    <img id="channelThumbnail" class="channel-thumbnail" alt="Channel thumbnail">
+                    <div id="thumbnailFallback" class="thumbnail-fallback" style="display: none;">
+                        🎬
+                    </div>
+                </div>
+                <div class="channel-info">
+                    <h2 class="channel-title" id="channelTitle">Channel Name</h2>
+                    <div class="channel-handle" id="channelHandle">
+                        @handle
+                        <span class="verified-badge">✓</span>
+                    </div>
+                    <a href="#" target="_blank" class="channel-link" id="channelLink">
+                        Open on YouTube →
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="actions">
+            <button class="action-btn good" onclick="handleAction('good')">
+                <div class="btn-content">
+                    <div class="btn-icon">✅</div>
+                    <div class="btn-label">Good Match</div>
+                    <div class="btn-key">Press 1</div>
+                </div>
+            </button>
+            <button class="action-btn bad" onclick="handleAction('bad')">
+                <div class="btn-content">
+                    <div class="btn-icon">❌</div>
+                    <div class="btn-label">Not a Match</div>
+                    <div class="btn-key">Press 2</div>
+                </div>
+            </button>
+            <button class="action-btn review" onclick="handleAction('review_later')">
+                <div class="btn-content">
+                    <div class="btn-icon">🤔</div>
+                    <div class="btn-label">Review Later</div>
+                    <div class="btn-key">Press 3</div>
+                </div>
+            </button>
+            <button class="action-btn skip" onclick="handleAction('skip')">
+                <div class="btn-content">
+                    <div class="btn-icon">⏭️</div>
+                    <div class="btn-label">Skip</div>
+                    <div class="btn-key">Press 4</div>
+                </div>
+            </button>
+        </div>
+    </div>
+
+    <!-- Completion Screen -->
+    <div class="completion-screen" id="completionScreen">
+        <div class="completion-icon">🎉</div>
+        <h1 class="completion-title">All Done!</h1>
+        <p class="completion-subtitle">You've reviewed all channels</p>
+
+        <div class="final-stats" id="finalStats">
+            <!-- Will be populated dynamically -->
+        </div>
+
+        <div class="action-buttons">
+            <button class="primary-btn" onclick="downloadUpdatedJSON()">
+                📥 Download Updated JSON
+            </button>
+            <button class="secondary-btn" onclick="downloadCSV()">
+                📊 Download as CSV
+            </button>
+            <button class="secondary-btn" onclick="resetSession()">
+                🔄 Load New File
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Master data array - this is the source of truth
+        let channelsData = [];
+        let currentIndex = 0;
+
+        // Stats counters
+        function calculateStats() {
+            return {
+                good: channelsData.filter(c => c.verification_decision === 'good').length,
+                bad: channelsData.filter(c => c.verification_decision === 'bad').length,
+                review: channelsData.filter(c => c.verification_decision === 'review_later').length,
+                pending: channelsData.filter(c => !c.verification_decision || c.verification_decision === 'pending').length
+            };
+        }
+
+        // Save the entire dataset
+        function saveData() {
+            localStorage.setItem('ytChannelsData', JSON.stringify(channelsData));
+            localStorage.setItem('ytCurrentIndex', currentIndex.toString());
+        }
+
+        // Load data
+        function loadData() {
+            const saved = localStorage.getItem('ytChannelsData');
+            if (saved) {
+                channelsData = JSON.parse(saved);
+                const savedIndex = localStorage.getItem('ytCurrentIndex');
+                currentIndex = savedIndex ? parseInt(savedIndex) : 0;
+                return true;
+            }
+            return false;
+        }
+
+        // Find next unreviewed channel
+        function findNextUnreviewed() {
+            for (let i = currentIndex; i < channelsData.length; i++) {
+                const decision = channelsData[i].verification_decision;
+                if (!decision || decision === 'pending') {
+                    return i;
+                }
+            }
+            // If nothing found from current position, search from beginning
+            for (let i = 0; i < currentIndex; i++) {
+                const decision = channelsData[i].verification_decision;
+                if (!decision || decision === 'pending') {
+                    return i;
+                }
+            }
+            return -1; // All reviewed
+        }
+
+        // Update UI
+        function updateProgress() {
+            const stats = calculateStats();
+            const reviewed = stats.good + stats.bad + stats.review;
+            const progress = channelsData.length > 0 ? (reviewed / channelsData.length) * 100 : 0;
+            
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('currentProgress').textContent = `${reviewed} / ${channelsData.length}`;
+            
+            document.getElementById('goodCount').innerHTML = `✓ ${stats.good}`;
+            document.getElementById('badCount').innerHTML = `✗ ${stats.bad}`;
+            document.getElementById('reviewCount').innerHTML = `? ${stats.review}`;
+
+            document.getElementById('sessionGood').textContent = stats.good;
+            document.getElementById('sessionBad').textContent = stats.bad;
+            document.getElementById('sessionReview').textContent = stats.review;
+            document.getElementById('sessionPending').textContent = stats.pending;
+        }
+
+        // Show current channel
+        function showCurrentChannel() {
+            // Find next unreviewed channel
+            currentIndex = findNextUnreviewed();
+            
+            if (currentIndex === -1) {
+                showCompletion();
+                return;
+            }
+
+            const channel = channelsData[currentIndex];
+            
+            document.getElementById('loadingScreen').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+            document.getElementById('completionScreen').style.display = 'none';
+            
+            // Update artist info
+            const stats = calculateStats();
+            const reviewed = stats.good + stats.bad + stats.review;
+            document.getElementById('artistName').textContent = channel.artist || 'Unknown Artist';
+            document.getElementById('artistMeta').textContent = `${reviewed} reviewed • ${stats.pending} remaining`;
+            
+            // Update channel info
+            document.getElementById('channelTitle').textContent = channel.channel_title || 'Unknown Channel';
+            const handle = channel.subscribers || '@unknown';
+            document.getElementById('channelHandle').innerHTML = `${handle} <span class="verified-badge">✓</span>`;
+            
+            // Set channel link
+            const channelUrl = channel.url || `https://youtube.com/${handle}`;
+            document.getElementById('channelLink').href = channelUrl;
+            
+            // Load thumbnail
+            loadThumbnail(channel);
+            
+            // Trigger animation
+            const container = document.getElementById('channelContainer');
+            container.style.animation = 'none';
+            setTimeout(() => {
+                container.style.animation = 'fadeIn 0.6s ease-out';
+            }, 10);
+            
+            updateProgress();
+            saveData();
+        }
+
+        function loadThumbnail(channel) {
+            const thumbnail = document.getElementById('channelThumbnail');
+            const fallback = document.getElementById('thumbnailFallback');
+            
+            const channelId = getChannelId(channel.subscribers || channel.url);
+            
+            const thumbnailSources = [
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(channel.channel_title || 'Channel')}&size=400&background=FF0000&color=fff&bold=true&format=png`
+            ];
+            
+            let currentSourceIndex = 0;
+            
+            function tryNextSource() {
+                if (currentSourceIndex >= thumbnailSources.length) {
+                    thumbnail.style.display = 'none';
+                    fallback.style.display = 'flex';
+                    return;
+                }
+                
+                const img = new Image();
+                img.onload = function() {
+                    thumbnail.src = thumbnailSources[currentSourceIndex];
+                    thumbnail.style.display = 'block';
+                    fallback.style.display = 'none';
+                    thumbnail.classList.remove('loading-thumbnail');
+                };
+                img.onerror = function() {
+                    currentSourceIndex++;
+                    tryNextSource();
+                };
+                img.src = thumbnailSources[currentSourceIndex];
+            }
+            
+            thumbnail.classList.add('loading-thumbnail');
+            tryNextSource();
+        }
+
+        function getChannelId(input) {
+            if (!input) return null;
+            if (input.includes('youtube.com/@')) {
+                return input.split('/@')[1].split('/')[0].split('?')[0];
+            }
+            if (input.includes('youtube.com/channel/')) {
+                return input.split('/channel/')[1].split('/')[0].split('?')[0];
+            }
+            if (input.startsWith('@')) {
+                return input;
+            }
+            return input;
+        }
+
+        // Handle actions
+        function handleAction(action) {
+            if (currentIndex === -1 || currentIndex >= channelsData.length) return;
+
+            // Update the channel's decision in the master array
+            channelsData[currentIndex].verification_decision = action;
+            channelsData[currentIndex].verification_timestamp = new Date().toISOString();
+
+            // Save immediately
+            saveData();
+
+            // Move to next unreviewed channel
+            showCurrentChannel();
+        }
+
+        // Show completion
+        function showCompletion() {
+            document.getElementById('mainContent').style.display = 'none';
+            document.getElementById('completionScreen').style.display = 'block';
+
+            const stats = calculateStats();
+
+            document.getElementById('finalStats').innerHTML = `
+                <div class="final-stat-card">
+                    <div class="final-stat-number good">${stats.good}</div>
+                    <div class="final-stat-label">Good Matches</div>
+                </div>
+                <div class="final-stat-card">
+                    <div class="final-stat-number bad">${stats.bad}</div>
+                    <div class="final-stat-label">Bad Matches</div>
+                </div>
+                <div class="final-stat-card">
+                    <div class="final-stat-number review">${stats.review}</div>
+                    <div class="final-stat-label">Review Later</div>
+                </div>
+                <div class="final-stat-card">
+                    <div class="final-stat-number" style="color: var(--yt-text)">${channelsData.length}</div>
+                    <div class="final-stat-label">Total Channels</div>
+                </div>
+            `;
+        }
+
+        // Download the updated JSON with decisions
+        function downloadUpdatedJSON() {
+            const dataStr = JSON.stringify(channelsData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `youtube_channels_verified_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function downloadCSV() {
+            let csv = 'Artist,Channel Title,Handle,URL,Decision,Timestamp\n';
+            
+            channelsData.forEach(channel => {
+                csv += `"${channel.artist || ''}","${channel.channel_title || ''}","${channel.subscribers || ''}","${channel.url || ''}","${channel.verification_decision || 'pending'}","${channel.verification_timestamp || ''}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `youtube_channels_verified_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function resetSession() {
+            if (confirm('Load a new file? Current progress will be lost unless you download it first.')) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        // File upload handling
+        function handleFileUpload(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const newData = JSON.parse(e.target.result);
+                    
+                    // Initialize verification fields if they don't exist
+                    channelsData = newData.map(channel => ({
+                        ...channel,
+                        verification_decision: channel.verification_decision || 'pending',
+                        verification_timestamp: channel.verification_timestamp || null
+                    }));
+                    
+                    currentIndex = 0;
+                    saveData();
+                    showCurrentChannel();
+                } catch (err) {
+                    alert('Error parsing JSON file. Please check the format.');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Drag and drop
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragging');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragging');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragging');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type === 'application/json') {
+                handleFileUpload(file);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                handleFileUpload(file);
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT') return;
+            
+            switch(e.key) {
+                case '1': handleAction('good'); break;
+                case '2': handleAction('bad'); break;
+                case '3': handleAction('review_later'); break;
+                case '4': handleAction('skip'); break;
+            }
+        });
+
+        // Initialize
+        function init() {
+            if (loadData()) {
+                showCurrentChannel();
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
