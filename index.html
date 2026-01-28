@@ -3,19 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Channel Verifier Pro</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <title>YouTube Channel Verifier</title>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#FF0000">
     <style>
         :root {
             --yt-red: #FF0000;
             --yt-dark: #0F0F0F;
             --yt-darker: #0A0A0A;
             --yt-gray: #272727;
-            --yt-light-gray: #3F3F3F;
             --yt-text: #F1F1F1;
             --yt-subtext: #AAAAAA;
             --success: #00D856;
@@ -34,11 +29,9 @@
             background: var(--yt-darker);
             color: var(--yt-text);
             min-height: 100vh;
-            padding: 0;
-            margin: 0;
         }
 
-        /* Header with progress bar */
+        /* Top Bar */
         .top-bar {
             position: fixed;
             top: 0;
@@ -47,256 +40,126 @@
             background: var(--yt-dark);
             border-bottom: 1px solid var(--yt-gray);
             z-index: 100;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-        }
-
-        .progress-bar-container {
-            height: 4px;
-            background: var(--yt-gray);
-            position: relative;
-            overflow: hidden;
         }
 
         .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, var(--yt-red), #FF6B6B);
-            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+            height: 4px;
+            background: var(--yt-red);
+            transition: width 0.4s;
         }
 
-        .header-content {
+        .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 16px 24px;
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
         .logo {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 800;
             color: var(--yt-red);
-            letter-spacing: -0.5px;
         }
 
-        .progress-info {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 14px;
-            color: var(--yt-subtext);
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .progress-info span {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .stats-badge {
-            background: var(--yt-gray);
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .stats-badge.good { color: var(--success); }
-        .stats-badge.bad { color: var(--danger); }
-        .stats-badge.review { color: var(--warning); }
-
-        /* Main content */
-        .main-content {
-            max-width: 1200px;
-            margin: 80px auto 0;
-            padding: 40px 24px;
-            display: none;
-        }
-
-        .artist-section {
-            text-align: center;
-            margin-bottom: 40px;
-            animation: slideDown 0.5s ease-out;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .artist-name {
-            font-size: 56px;
-            font-weight: 800;
-            letter-spacing: -2px;
-            margin-bottom: 12px;
-            background: linear-gradient(135deg, #fff 0%, #aaa 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .artist-meta {
+        .stats {
             font-family: 'JetBrains Mono', monospace;
             font-size: 13px;
             color: var(--yt-subtext);
+            display: flex;
+            gap: 16px;
+        }
+
+        /* Main Content */
+        .main {
+            max-width: 1200px;
+            margin: 80px auto 0;
+            padding: 40px 24px;
+        }
+
+        .artist-title {
+            font-size: 48px;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 32px;
+            background: linear-gradient(135deg, #fff 0%, #aaa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         /* Channel Card */
-        .channel-container {
+        .channel-card {
             background: var(--yt-dark);
             border-radius: 16px;
-            padding: 40px;
+            padding: 32px;
+            margin-bottom: 24px;
             border: 2px solid var(--yt-gray);
-            margin-bottom: 30px;
-            transition: all 0.3s ease;
-            animation: fadeIn 0.6s ease-out;
         }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        .channel-container:hover {
-            border-color: var(--yt-light-gray);
-            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
-        }
-
-        .channel-visual {
-            margin-bottom: 30px;
-        }
-
-        .main-thumbnail-section {
-            display: grid;
-            grid-template-columns: 400px 1fr;
-            gap: 30px;
+        .channel-header {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 24px;
             align-items: start;
-            margin-bottom: 30px;
         }
 
-        .thumbnail-section {
-            position: relative;
-        }
-
-        .channel-thumbnail {
-            width: 100%;
-            height: 225px;
-            border-radius: 12px;
-            object-fit: cover;
-            background: var(--yt-gray);
-            border: 3px solid var(--yt-gray);
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        .channel-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 3px solid var(--yt-red);
             cursor: pointer;
         }
 
-        .channel-thumbnail:hover {
-            transform: scale(1.02);
-            border-color: var(--yt-red);
-            box-shadow: 0 12px 32px rgba(255, 0, 0, 0.3);
+        .channel-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
         }
 
-        .thumbnail-fallback {
-            width: 100%;
-            height: 225px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, var(--yt-gray) 0%, var(--yt-light-gray) 100%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 64px;
-            border: 3px solid var(--yt-gray);
-            gap: 12px;
+        .channel-info h2 {
+            font-size: 28px;
+            margin-bottom: 8px;
         }
 
-        .fallback-text {
-            font-size: 14px;
+        .channel-handle {
             color: var(--yt-subtext);
             font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 12px;
         }
 
-        /* Preview images grid */
-        .preview-images {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-top: 20px;
+        .open-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: rgba(255, 0, 0, 0.1);
+            color: var(--yt-red);
+            text-decoration: none;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            font-weight: 600;
+            font-size: 14px;
         }
 
-        .preview-item {
-            position: relative;
-            aspect-ratio: 16/9;
-            border-radius: 8px;
-            overflow: hidden;
-            background: var(--yt-gray);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: 2px solid transparent;
+        .open-btn:hover {
+            background: rgba(255, 0, 0, 0.2);
         }
 
-        .preview-item:hover {
-            transform: scale(1.05);
-            border-color: var(--yt-red);
-            box-shadow: 0 4px 12px rgba(255, 0, 0, 0.3);
-        }
-
-        .preview-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .preview-item.loading {
-            background: linear-gradient(135deg, var(--yt-gray) 0%, var(--yt-light-gray) 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-        }
-
-        /* Embedded preview iframe */
-        .embedded-preview {
-            width: 100%;
+        /* Video Grid */
+        .videos-section {
             margin-top: 24px;
             padding-top: 24px;
             border-top: 1px solid var(--yt-gray);
         }
 
-        .preview-title {
+        .section-title {
             font-size: 16px;
             font-weight: 700;
             margin-bottom: 16px;
-            color: var(--yt-text);
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
-        .preview-loading {
-            text-align: center;
-            padding: 40px;
-            color: var(--yt-subtext);
-        }
-
-        /* Video grid from API */
         .videos-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             gap: 16px;
         }
 
@@ -305,41 +168,26 @@
             border-radius: 12px;
             overflow: hidden;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.2s;
             border: 2px solid transparent;
         }
 
         .video-card:hover {
             border-color: var(--yt-red);
             transform: translateY(-4px);
-            box-shadow: 0 8px 20px rgba(255, 0, 0, 0.3);
         }
 
-        .video-thumb {
+        .video-thumbnail {
             width: 100%;
             aspect-ratio: 16/9;
             background: var(--yt-gray);
             position: relative;
-            overflow: hidden;
         }
 
-        .video-thumb img {
+        .video-thumbnail img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-        }
-
-        .video-duration {
-            position: absolute;
-            bottom: 8px;
-            right: 8px;
-            background: rgba(0, 0, 0, 0.9);
-            color: white;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 600;
-            font-family: 'JetBrains Mono', monospace;
         }
 
         .video-info {
@@ -355,170 +203,40 @@
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            color: var(--yt-text);
         }
 
-        .video-meta {
+        .video-date {
             font-size: 11px;
             color: var(--yt-subtext);
             font-family: 'JetBrains Mono', monospace;
         }
 
-        .channel-stats {
-            display: flex;
-            gap: 20px;
-            padding: 16px;
-            background: var(--yt-darker);
-            border-radius: 8px;
-            margin-bottom: 16px;
-        }
-
-        .channel-stat {
-            text-align: center;
-        }
-
-        .channel-stat-number {
-            font-size: 20px;
-            font-weight: 800;
-            color: var(--yt-red);
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .channel-stat-label {
-            font-size: 11px;
-            color: var(--yt-subtext);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 4px;
-        }
-
-        .api-error {
-            text-align: center;
-            padding: 40px;
-            color: var(--yt-subtext);
-            font-size: 14px;
-        }
-
-        .api-error-icon {
-            font-size: 48px;
-            margin-bottom: 12px;
-        }
-
-        .loading-thumbnail {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .loading-thumbnail::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            animation: shimmer 2s infinite;
-        }
-
-        @keyframes shimmer {
-            to {
-                left: 100%;
-            }
-        }
-
-        .channel-info {
-            text-align: left;
-        }
-
-        .channel-title {
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            line-height: 1.2;
-            color: var(--yt-text);
-        }
-
-        .channel-handle {
-            font-family: 'JetBrains Mono', monospace;
-            color: var(--yt-subtext);
-            font-size: 16px;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .verified-badge {
-            width: 18px;
-            height: 18px;
-            background: var(--yt-subtext);
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-        }
-
-        .channel-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--yt-red);
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 14px;
-            padding: 10px 18px;
-            background: rgba(255, 0, 0, 0.1);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 0, 0, 0.3);
-            transition: all 0.3s ease;
-            margin-top: 12px;
-        }
-
-        .channel-link:hover {
-            background: rgba(255, 0, 0, 0.2);
-            transform: translateX(4px);
-        }
-
-        /* Action buttons */
+        /* Action Buttons */
         .actions {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 16px;
-            margin-bottom: 30px;
+            margin-top: 24px;
         }
 
         .action-btn {
-            padding: 20px 24px;
+            padding: 20px;
             border: 2px solid;
             border-radius: 12px;
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            font-family: 'Syne', sans-serif;
-            position: relative;
-            overflow: hidden;
+            transition: all 0.2s;
             background: var(--yt-dark);
+            font-family: 'Syne', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
         }
 
-        .action-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            transition: left 0.5s;
-        }
-
-        .action-btn:hover::before {
-            left: 100%;
-        }
-
-        .action-btn:active {
-            transform: scale(0.97);
+        .action-btn:hover {
+            transform: translateY(-2px);
         }
 
         .action-btn.good {
@@ -529,7 +247,6 @@
         .action-btn.good:hover {
             background: var(--success);
             color: var(--yt-dark);
-            box-shadow: 0 8px 24px rgba(0, 216, 86, 0.4);
         }
 
         .action-btn.bad {
@@ -540,7 +257,6 @@
         .action-btn.bad:hover {
             background: var(--danger);
             color: var(--yt-dark);
-            box-shadow: 0 8px 24px rgba(255, 68, 68, 0.4);
         }
 
         .action-btn.review {
@@ -551,95 +267,25 @@
         .action-btn.review:hover {
             background: var(--warning);
             color: var(--yt-dark);
-            box-shadow: 0 8px 24px rgba(255, 165, 0, 0.4);
         }
 
         .action-btn.skip {
-            border-color: var(--yt-light-gray);
+            border-color: var(--yt-gray);
             color: var(--yt-subtext);
-        }
-
-        .action-btn.skip:hover {
-            background: var(--yt-light-gray);
-            color: var(--yt-text);
-        }
-
-        .btn-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            position: relative;
-            z-index: 1;
         }
 
         .btn-icon {
             font-size: 24px;
         }
 
-        .btn-label {
-            font-size: 14px;
-            font-weight: 600;
-        }
-
         .btn-key {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
+            font-size: 10px;
             opacity: 0.6;
-        }
-
-        /* Quick stats sidebar */
-        .quick-stats {
-            background: var(--yt-dark);
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid var(--yt-gray);
-            margin-bottom: 30px;
-        }
-
-        .quick-stats h3 {
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--yt-subtext);
-            margin-bottom: 16px;
-            font-weight: 600;
-        }
-
-        .stat-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-        }
-
-        .stat-item {
-            text-align: center;
-            padding: 12px;
-            background: var(--yt-darker);
-            border-radius: 8px;
-        }
-
-        .stat-number {
-            font-size: 28px;
-            font-weight: 800;
             font-family: 'JetBrains Mono', monospace;
         }
 
-        .stat-number.good { color: var(--success); }
-        .stat-number.bad { color: var(--danger); }
-        .stat-number.review { color: var(--warning); }
-        .stat-number.pending { color: var(--yt-subtext); }
-
-        .stat-label {
-            font-size: 11px;
-            color: var(--yt-subtext);
-            margin-top: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        /* Loading state */
-        .loading-screen {
+        /* Loading */
+        .loading {
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -648,7 +294,7 @@
             padding: 40px;
         }
 
-        .loader {
+        .spinner {
             width: 60px;
             height: 60px;
             border: 4px solid var(--yt-gray);
@@ -662,12 +308,6 @@
             to { transform: rotate(360deg); }
         }
 
-        .loading-text {
-            font-size: 18px;
-            color: var(--yt-subtext);
-            margin-bottom: 12px;
-        }
-
         .upload-area {
             margin-top: 32px;
             padding: 60px;
@@ -675,7 +315,6 @@
             border-radius: 16px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s ease;
             max-width: 500px;
         }
 
@@ -684,95 +323,58 @@
             background: rgba(255, 0, 0, 0.05);
         }
 
-        .upload-area.dragging {
-            border-color: var(--yt-red);
-            background: rgba(255, 0, 0, 0.1);
-            transform: scale(1.02);
-        }
-
-        .upload-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-        }
-
-        .upload-area input {
+        input[type="file"] {
             display: none;
         }
 
-        /* Completion screen */
-        .completion-screen {
-            display: none;
-            max-width: 900px;
-            margin: 80px auto 0;
-            padding: 60px 40px;
+        /* Completion */
+        .completion {
             text-align: center;
+            padding: 60px 20px;
         }
 
         .completion-icon {
-            font-size: 120px;
+            font-size: 100px;
             margin-bottom: 24px;
-            animation: celebrate 0.8s ease-out;
         }
 
-        @keyframes celebrate {
-            0%, 100% { transform: rotate(0deg) scale(1); }
-            25% { transform: rotate(-10deg) scale(1.1); }
-            75% { transform: rotate(10deg) scale(1.1); }
+        .completion h1 {
+            font-size: 42px;
+            margin-bottom: 16px;
+            color: var(--yt-red);
         }
 
-        .completion-title {
+        .completion-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin: 32px 0;
+        }
+
+        .stat-card {
+            background: var(--yt-dark);
+            padding: 24px;
+            border-radius: 12px;
+        }
+
+        .stat-number {
             font-size: 48px;
             font-weight: 800;
-            margin-bottom: 16px;
-            background: linear-gradient(135deg, var(--yt-red) 0%, #FF6B6B 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .completion-subtitle {
-            font-size: 18px;
-            color: var(--yt-subtext);
-            margin-bottom: 48px;
-        }
-
-        .final-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 24px;
-            margin-bottom: 48px;
-        }
-
-        .final-stat-card {
-            background: var(--yt-dark);
-            padding: 32px;
-            border-radius: 16px;
-            border: 2px solid var(--yt-gray);
-        }
-
-        .final-stat-number {
-            font-size: 56px;
-            font-weight: 800;
             font-family: 'JetBrains Mono', monospace;
-            margin-bottom: 8px;
         }
 
-        .final-stat-label {
-            font-size: 14px;
+        .stat-number.good { color: var(--success); }
+        .stat-number.bad { color: var(--danger); }
+        .stat-number.review { color: var(--warning); }
+
+        .stat-label {
+            font-size: 12px;
             color: var(--yt-subtext);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 16px;
-            justify-content: center;
-            flex-wrap: wrap;
+            margin-top: 8px;
         }
 
         .primary-btn {
-            padding: 18px 36px;
+            padding: 16px 32px;
             background: var(--yt-red);
             color: white;
             border: none;
@@ -780,745 +382,399 @@
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease;
+            margin: 8px;
             font-family: 'Syne', sans-serif;
         }
 
         .primary-btn:hover {
             background: #CC0000;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(255, 0, 0, 0.4);
         }
 
-        .secondary-btn {
-            padding: 18px 36px;
-            background: var(--yt-dark);
-            color: var(--yt-text);
-            border: 2px solid var(--yt-gray);
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Syne', sans-serif;
-        }
-
-        .secondary-btn:hover {
-            border-color: var(--yt-light-gray);
-            background: var(--yt-gray);
-        }
-
-        /* Responsive */
         @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                gap: 12px;
+            .actions {
+                grid-template-columns: 1fr 1fr;
             }
-
-            .progress-info {
-                flex-direction: column;
-                gap: 8px;
-                font-size: 12px;
-            }
-
-            .artist-name {
-                font-size: 36px;
-            }
-
-            .main-thumbnail-section {
-                grid-template-columns: 1fr;
-            }
-
-            .channel-thumbnail,
-            .thumbnail-fallback {
-                height: 200px;
-            }
-
-            .channel-info {
-                text-align: center;
-            }
-
-            .channel-handle {
-                justify-content: center;
-            }
-
-            .preview-images {
-                grid-template-columns: 1fr;
-            }
-
+            
             .videos-grid {
                 grid-template-columns: 1fr;
             }
 
-            .actions {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .stat-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .final-stats {
-                grid-template-columns: 1fr;
-            }
-
-            .action-buttons {
+            .channel-header {
                 flex-direction: column;
-            }
-
-            .primary-btn,
-            .secondary-btn {
-                width: 100%;
-            }
-
-            .preview-iframe {
-                height: 300px;
+                text-align: center;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Top Bar with Progress -->
+    <!-- Top Bar -->
     <div class="top-bar">
-        <div class="progress-bar-container">
-            <div class="progress-bar" id="progressBar"></div>
-        </div>
-        <div class="header-content">
+        <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+        <div class="header">
             <div class="logo">YT VERIFIER</div>
-            <div class="progress-info">
-                <span id="currentProgress">0 / 0</span>
-                <span class="stats-badge good" id="goodCount">✓ 0</span>
-                <span class="stats-badge bad" id="badCount">✗ 0</span>
-                <span class="stats-badge review" id="reviewCount">? 0</span>
+            <div class="stats">
+                <span id="progress">0 / 0</span>
+                <span style="color: var(--success)" id="good">✓ 0</span>
+                <span style="color: var(--danger)" id="bad">✗ 0</span>
+                <span style="color: var(--warning)" id="review">? 0</span>
             </div>
         </div>
     </div>
 
     <!-- Loading Screen -->
-    <div class="loading-screen" id="loadingScreen">
-        <div class="loader"></div>
-        <div class="loading-text">Initializing...</div>
+    <div class="loading" id="loadingScreen">
+        <div class="spinner"></div>
+        <p>Loading...</p>
         <div class="upload-area" id="uploadArea">
-            <div class="upload-icon">📁</div>
+            <div style="font-size: 48px; margin-bottom: 16px">📁</div>
             <h3>Drop your JSON file here</h3>
-            <p style="color: var(--yt-subtext); margin-top: 8px; font-size: 14px;">or click to browse</p>
+            <p style="color: var(--yt-subtext); margin-top: 8px; font-size: 14px">or click to browse</p>
             <input type="file" id="fileInput" accept=".json">
         </div>
     </div>
 
     <!-- Main Content -->
-    <div class="main-content" id="mainContent">
-        <!-- Quick Stats -->
-        <div class="quick-stats">
-            <h3>Session Progress</h3>
-            <div class="stat-grid">
-                <div class="stat-item">
-                    <div class="stat-number good" id="sessionGood">0</div>
-                    <div class="stat-label">Good</div>
+    <div class="main" id="mainContent" style="display: none">
+        <div class="artist-title" id="artistName">Artist Name</div>
+        
+        <div class="channel-card">
+            <div class="channel-header">
+                <img id="channelAvatar" class="channel-avatar" src="" alt="Channel" onclick="openChannel()">
+                <div class="channel-info">
+                    <h2 id="channelTitle">Channel Name</h2>
+                    <div class="channel-handle" id="channelHandle">@handle</div>
+                    <a href="#" id="channelLink" class="open-btn" target="_blank">Open on YouTube →</a>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-number bad" id="sessionBad">0</div>
-                    <div class="stat-label">Bad</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number review" id="sessionReview">0</div>
-                    <div class="stat-label">Review</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number pending" id="sessionPending">0</div>
-                    <div class="stat-label">Pending</div>
+            </div>
+
+            <div class="videos-section">
+                <div class="section-title">📺 Recent Videos</div>
+                <div class="videos-grid" id="videosGrid">
+                    <!-- Videos will load here -->
                 </div>
             </div>
         </div>
 
-        <!-- Artist Section -->
-        <div class="artist-section">
-            <div class="artist-name" id="artistName">Artist Name</div>
-            <div class="artist-meta" id="artistMeta">Channel verification</div>
-        </div>
-
-        <!-- Channel Container -->
-        <div class="channel-container" id="channelContainer">
-            <div class="channel-visual">
-                <div class="main-thumbnail-section">
-                    <div class="thumbnail-section">
-                        <img id="channelThumbnail" class="channel-thumbnail" alt="Channel thumbnail" onclick="openChannelInNewTab()">
-                        <div id="thumbnailFallback" class="thumbnail-fallback" style="display: none;" onclick="openChannelInNewTab()">
-                            🎬
-                            <div class="fallback-text">Click to preview</div>
-                        </div>
-                        
-                        <!-- Preview thumbnails -->
-                        <div class="preview-images" id="previewImages">
-                            <!-- Will be populated with channel preview images -->
-                        </div>
-                    </div>
-                    
-                    <div class="channel-info">
-                        <h2 class="channel-title" id="channelTitle">Channel Name</h2>
-                        <div class="channel-handle" id="channelHandle">
-                            @handle
-                            <span class="verified-badge">✓</span>
-                        </div>
-                        <a href="#" target="_blank" class="channel-link" id="channelLink">
-                            Open on YouTube →
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Embedded Channel Preview -->
-                <div class="embedded-preview">
-                    <div class="preview-title">
-                        📺 Recent Videos
-                    </div>
-                    <div id="channelPreview" class="preview-loading">
-                        Loading channel data...
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Action Buttons -->
         <div class="actions">
-            <button class="action-btn good" onclick="handleAction('good')">
-                <div class="btn-content">
-                    <div class="btn-icon">✅</div>
-                    <div class="btn-label">Good Match</div>
-                    <div class="btn-key">Press 1</div>
-                </div>
+            <button class="action-btn good" onclick="decide('good')">
+                <span class="btn-icon">✅</span>
+                <span>Good Match</span>
+                <span class="btn-key">Press 1</span>
             </button>
-            <button class="action-btn bad" onclick="handleAction('bad')">
-                <div class="btn-content">
-                    <div class="btn-icon">❌</div>
-                    <div class="btn-label">Not a Match</div>
-                    <div class="btn-key">Press 2</div>
-                </div>
+            <button class="action-btn bad" onclick="decide('bad')">
+                <span class="btn-icon">❌</span>
+                <span>Not a Match</span>
+                <span class="btn-key">Press 2</span>
             </button>
-            <button class="action-btn review" onclick="handleAction('review_later')">
-                <div class="btn-content">
-                    <div class="btn-icon">🤔</div>
-                    <div class="btn-label">Review Later</div>
-                    <div class="btn-key">Press 3</div>
-                </div>
+            <button class="action-btn review" onclick="decide('review_later')">
+                <span class="btn-icon">🤔</span>
+                <span>Review Later</span>
+                <span class="btn-key">Press 3</span>
             </button>
-            <button class="action-btn skip" onclick="handleAction('skip')">
-                <div class="btn-content">
-                    <div class="btn-icon">⏭️</div>
-                    <div class="btn-label">Skip</div>
-                    <div class="btn-key">Press 4</div>
-                </div>
+            <button class="action-btn skip" onclick="decide('skip')">
+                <span class="btn-icon">⏭️</span>
+                <span>Skip</span>
+                <span class="btn-key">Press 4</span>
             </button>
         </div>
     </div>
 
     <!-- Completion Screen -->
-    <div class="completion-screen" id="completionScreen">
+    <div class="completion" id="completionScreen" style="display: none">
         <div class="completion-icon">🎉</div>
-        <h1 class="completion-title">All Done!</h1>
-        <p class="completion-subtitle">You've reviewed all channels</p>
+        <h1>All Done!</h1>
+        <p style="color: var(--yt-subtext)">You've reviewed all channels</p>
 
-        <div class="final-stats" id="finalStats">
-            <!-- Will be populated dynamically -->
-        </div>
+        <div class="completion-stats" id="completionStats"></div>
 
-        <div class="action-buttons">
-            <button class="primary-btn" onclick="downloadUpdatedJSON()">
-                📥 Download Updated JSON
-            </button>
-            <button class="secondary-btn" onclick="downloadCSV()">
-                📊 Download as CSV
-            </button>
-            <button class="secondary-btn" onclick="resetSession()">
-                🔄 Load New File
-            </button>
-        </div>
+        <button class="primary-btn" onclick="downloadJSON()">📥 Download Updated JSON</button>
+        <button class="primary-btn" onclick="downloadCSV()">📊 Download CSV</button>
+        <button class="primary-btn" onclick="reset()">🔄 Load New File</button>
     </div>
 
     <script>
-        // Master data array - this is the source of truth
-        let channelsData = [];
+        let channels = [];
         let currentIndex = 0;
 
-        // Stats counters
-        function calculateStats() {
+        function calcStats() {
             return {
-                good: channelsData.filter(c => c.verification_decision === 'good').length,
-                bad: channelsData.filter(c => c.verification_decision === 'bad').length,
-                review: channelsData.filter(c => c.verification_decision === 'review_later').length,
-                pending: channelsData.filter(c => !c.verification_decision || c.verification_decision === 'pending').length
+                good: channels.filter(c => c.verification_decision === 'good').length,
+                bad: channels.filter(c => c.verification_decision === 'bad').length,
+                review: channels.filter(c => c.verification_decision === 'review_later').length,
+                pending: channels.filter(c => !c.verification_decision || c.verification_decision === 'pending').length
             };
         }
 
-        // Save the entire dataset
-        function saveData() {
-            localStorage.setItem('ytChannelsData', JSON.stringify(channelsData));
-            localStorage.setItem('ytCurrentIndex', currentIndex.toString());
+        function save() {
+            localStorage.setItem('ytChannels', JSON.stringify(channels));
+            localStorage.setItem('ytIndex', currentIndex.toString());
         }
 
-        // Load data
-        function loadData() {
-            const saved = localStorage.getItem('ytChannelsData');
+        function load() {
+            const saved = localStorage.getItem('ytChannels');
             if (saved) {
-                channelsData = JSON.parse(saved);
-                const savedIndex = localStorage.getItem('ytCurrentIndex');
-                currentIndex = savedIndex ? parseInt(savedIndex) : 0;
+                channels = JSON.parse(saved);
+                currentIndex = parseInt(localStorage.getItem('ytIndex') || '0');
                 return true;
             }
             return false;
         }
 
-        // Find next unreviewed channel
-        function findNextUnreviewed() {
-            for (let i = currentIndex; i < channelsData.length; i++) {
-                const decision = channelsData[i].verification_decision;
-                if (!decision || decision === 'pending') {
+        function findNext() {
+            for (let i = currentIndex; i < channels.length; i++) {
+                if (!channels[i].verification_decision || channels[i].verification_decision === 'pending') {
                     return i;
                 }
             }
-            // If nothing found from current position, search from beginning
             for (let i = 0; i < currentIndex; i++) {
-                const decision = channelsData[i].verification_decision;
-                if (!decision || decision === 'pending') {
+                if (!channels[i].verification_decision || channels[i].verification_decision === 'pending') {
                     return i;
                 }
             }
-            return -1; // All reviewed
+            return -1;
         }
 
-        // Update UI
-        function updateProgress() {
-            const stats = calculateStats();
+        function updateUI() {
+            const stats = calcStats();
             const reviewed = stats.good + stats.bad + stats.review;
-            const progress = channelsData.length > 0 ? (reviewed / channelsData.length) * 100 : 0;
+            const progress = channels.length > 0 ? (reviewed / channels.length) * 100 : 0;
             
             document.getElementById('progressBar').style.width = progress + '%';
-            document.getElementById('currentProgress').textContent = `${reviewed} / ${channelsData.length}`;
-            
-            document.getElementById('goodCount').innerHTML = `✓ ${stats.good}`;
-            document.getElementById('badCount').innerHTML = `✗ ${stats.bad}`;
-            document.getElementById('reviewCount').innerHTML = `? ${stats.review}`;
-
-            document.getElementById('sessionGood').textContent = stats.good;
-            document.getElementById('sessionBad').textContent = stats.bad;
-            document.getElementById('sessionReview').textContent = stats.review;
-            document.getElementById('sessionPending').textContent = stats.pending;
+            document.getElementById('progress').textContent = `${reviewed} / ${channels.length}`;
+            document.getElementById('good').textContent = `✓ ${stats.good}`;
+            document.getElementById('bad').textContent = `✗ ${stats.bad}`;
+            document.getElementById('review').textContent = `? ${stats.review}`;
         }
 
-        // Show current channel
-        function showCurrentChannel() {
-            // Find next unreviewed channel
-            currentIndex = findNextUnreviewed();
+        function showChannel() {
+            currentIndex = findNext();
             
             if (currentIndex === -1) {
                 showCompletion();
                 return;
             }
 
-            const channel = channelsData[currentIndex];
+            const ch = channels[currentIndex];
             
             document.getElementById('loadingScreen').style.display = 'none';
             document.getElementById('mainContent').style.display = 'block';
             document.getElementById('completionScreen').style.display = 'none';
             
-            // Update artist info
-            const stats = calculateStats();
-            const reviewed = stats.good + stats.bad + stats.review;
-            document.getElementById('artistName').textContent = channel.artist || 'Unknown Artist';
-            document.getElementById('artistMeta').textContent = `${reviewed} reviewed • ${stats.pending} remaining`;
+            document.getElementById('artistName').textContent = ch.artist || 'Unknown Artist';
+            document.getElementById('channelTitle').textContent = ch.channel_title || 'Unknown Channel';
+            document.getElementById('channelHandle').textContent = ch.subscribers || '@unknown';
             
-            // Update channel info
-            document.getElementById('channelTitle').textContent = channel.channel_title || 'Unknown Channel';
-            const handle = channel.subscribers || '@unknown';
-            document.getElementById('channelHandle').innerHTML = `${handle} <span class="verified-badge">✓</span>`;
+            const url = ch.url || `https://youtube.com/${ch.subscribers}`;
+            document.getElementById('channelLink').href = url;
             
-            // Set channel link
-            const channelUrl = channel.url || `https://youtube.com/${handle}`;
-            document.getElementById('channelLink').href = channelUrl;
+            // Avatar
+            const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(ch.channel_title || 'C')}&size=200&background=FF0000&color=fff&bold=true`;
+            document.getElementById('channelAvatar').src = avatar;
             
-            // Load visual previews
-            loadChannelVisuals(channel);
+            // Load videos
+            loadVideos(ch);
             
-            // Trigger animation
-            const container = document.getElementById('channelContainer');
-            container.style.animation = 'none';
-            setTimeout(() => {
-                container.style.animation = 'fadeIn 0.6s ease-out';
-            }, 10);
-            
-            updateProgress();
-            saveData();
+            updateUI();
+            save();
         }
 
-        function openChannelInNewTab() {
-            const link = document.getElementById('channelLink');
-            if (link && link.href) {
-                window.open(link.href, '_blank');
-            }
-        }
-
-        function loadChannelVisuals(channel) {
-            const channelHandle = getChannelId(channel.subscribers || channel.url);
-            const channelUrl = channel.url || `https://youtube.com/${channelHandle}`;
+        function loadVideos(ch) {
+            const grid = document.getElementById('videosGrid');
+            grid.innerHTML = '<p style="text-align:center;color:var(--yt-subtext);padding:40px">Loading videos...</p>';
             
-            // Load main thumbnail
-            loadMainThumbnail(channel);
+            // Try to get channel ID
+            const handle = ch.subscribers?.replace('@', '') || '';
+            const channelId = ch.url?.includes('/channel/') ? ch.url.split('/channel/')[1].split('/')[0] : handle;
             
-            // Load preview images
-            loadPreviewImages(channelHandle, channel.channel_title);
-            
-            // Load embedded preview
-            loadEmbeddedPreview(channelHandle, channelUrl);
-        }
-
-        function loadMainThumbnail(channel) {
-            const thumbnail = document.getElementById('channelThumbnail');
-            const fallback = document.getElementById('thumbnailFallback');
-            
-            const thumbnailUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(channel.channel_title || 'Channel')}&size=600&background=FF0000&color=fff&bold=true&format=png`;
-            
-            const img = new Image();
-            img.onload = function() {
-                thumbnail.src = thumbnailUrl;
-                thumbnail.style.display = 'block';
-                fallback.style.display = 'none';
-            };
-            img.onerror = function() {
-                thumbnail.style.display = 'none';
-                fallback.style.display = 'flex';
-            };
-            img.src = thumbnailUrl;
-        }
-
-        function loadPreviewImages(channelHandle, channelTitle) {
-            const previewContainer = document.getElementById('previewImages');
-            
-            // Create 4 preview boxes
-            const previews = [
-                { label: 'Channel', bg: 'FF0000' },
-                { label: 'Videos', bg: 'CC0000' },
-                { label: 'About', bg: '990000' },
-                { label: 'Community', bg: '660000' }
-            ];
-            
-            previewContainer.innerHTML = previews.map((preview, idx) => {
-                const url = `https://ui-avatars.com/api/?name=${encodeURIComponent(preview.label)}&size=300&background=${preview.bg}&color=fff&bold=true&format=png`;
-                return `
-                    <div class="preview-item" onclick="openChannelInNewTab()">
-                        <img src="${url}" alt="${preview.label} preview">
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function loadEmbeddedPreview(channelHandle, channelUrl) {
-            const previewContainer = document.getElementById('channelPreview');
-            previewContainer.innerHTML = '<div class="preview-loading">Loading recent videos...</div>';
-            
-            // Extract channel ID from URL
-            const channelId = extractChannelId(channelUrl, channelHandle);
-            
-            // Try to fetch using RSS feed (works without CORS)
-            fetchChannelVideosViaRSS(channelId)
-                .then(videos => {
-                    if (videos && videos.length > 0) {
-                        displayChannelVideos({ videos });
-                    } else {
-                        // Show thumbnails as fallback
-                        displayThumbnailFallback(channelId);
+            // Try YouTube RSS feed via CORS proxy
+            fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`)}`)
+                .then(res => res.text())
+                .then(xml => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(xml, 'text/xml');
+                    const entries = doc.querySelectorAll('entry');
+                    
+                    if (entries.length === 0) {
+                        showPlaceholders();
+                        return;
                     }
+                    
+                    const videos = Array.from(entries).slice(0, 6).map(entry => ({
+                        id: entry.querySelector('videoId')?.textContent || '',
+                        title: entry.querySelector('title')?.textContent || 'Video',
+                        date: formatDate(entry.querySelector('published')?.textContent || '')
+                    }));
+                    
+                    displayVideos(videos);
                 })
                 .catch(err => {
-                    console.log('RSS fetch failed, using thumbnail fallback:', err);
-                    displayThumbnailFallback(channelId);
+                    console.log('RSS failed:', err);
+                    showPlaceholders();
                 });
         }
 
-        function extractChannelId(url, handle) {
-            // Try to extract channel ID from various URL formats
-            if (url.includes('/channel/')) {
-                return url.split('/channel/')[1].split('/')[0].split('?')[0];
-            }
-            // For @username format, we'll use the handle
-            return handle.replace('@', '');
+        function displayVideos(videos) {
+            const grid = document.getElementById('videosGrid');
+            grid.innerHTML = videos.map(v => `
+                <div class="video-card" onclick="window.open('https://youtube.com/watch?v=${v.id}', '_blank')">
+                    <div class="video-thumbnail">
+                        <img src="https://i.ytimg.com/vi/${v.id}/mqdefault.jpg" alt="${v.title}">
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">${v.title}</div>
+                        <div class="video-date">${v.date}</div>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        async function fetchChannelVideosViaRSS(channelId) {
-            try {
-                // YouTube RSS feed - works without API key
-                const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
-                
-                // Use a CORS proxy or fetch directly (may be blocked by CORS)
-                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
-                
-                const response = await fetch(proxyUrl);
-                const xmlText = await response.text();
-                
-                // Parse XML
-                const parser = new DOMParser();
-                const xml = parser.parseFromString(xmlText, 'text/xml');
-                
-                // Extract video entries
-                const entries = xml.querySelectorAll('entry');
-                const videos = Array.from(entries).slice(0, 8).map(entry => {
-                    const videoId = entry.querySelector('videoId')?.textContent || '';
-                    const title = entry.querySelector('title')?.textContent || 'Untitled';
-                    const published = entry.querySelector('published')?.textContent || '';
-                    
-                    return {
-                        videoId,
-                        title,
-                        thumbnail: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
-                        publishedTime: formatDate(published)
-                    };
-                });
-                
-                return videos;
-            } catch (error) {
-                console.error('RSS fetch error:', error);
-                return null;
-            }
+        function showPlaceholders() {
+            const grid = document.getElementById('videosGrid');
+            grid.innerHTML = Array.from({length: 6}, (_, i) => `
+                <div class="video-card" onclick="openChannel()">
+                    <div class="video-thumbnail">
+                        <img src="https://via.placeholder.com/320x180/282828/AAAAAA?text=Click+to+View" alt="Video">
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">Click to view channel on YouTube</div>
+                        <div class="video-date">Recent video</div>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        function formatDate(dateString) {
+        function formatDate(dateStr) {
             try {
-                const date = new Date(dateString);
-                const now = new Date();
-                const diffTime = Math.abs(now - date);
-                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                
-                if (diffDays === 0) return 'Today';
-                if (diffDays === 1) return 'Yesterday';
-                if (diffDays < 7) return `${diffDays} days ago`;
-                if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-                if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
-                return `${Math.floor(diffDays / 365)} years ago`;
+                const date = new Date(dateStr);
+                const days = Math.floor((new Date() - date) / (1000 * 60 * 60 * 24));
+                if (days === 0) return 'Today';
+                if (days === 1) return 'Yesterday';
+                if (days < 7) return `${days} days ago`;
+                if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
+                if (days < 365) return `${Math.floor(days / 30)} months ago`;
+                return `${Math.floor(days / 365)} years ago`;
             } catch {
                 return '';
             }
         }
 
-        function displayChannelVideos(data) {
-            const previewContainer = document.getElementById('channelPreview');
-            
-            const videosHTML = `
-                <div class="videos-grid">
-                    ${data.videos.map(video => `
-                        <div class="video-card" onclick="window.open('https://youtube.com/watch?v=${video.videoId}', '_blank')">
-                            <div class="video-thumb">
-                                <img src="${video.thumbnail}" 
-                                     onerror="this.src='https://via.placeholder.com/320x180/FF0000/FFFFFF?text=Video'"
-                                     alt="${video.title}">
-                                ${video.duration ? `<div class="video-duration">${video.duration}</div>` : ''}
-                            </div>
-                            <div class="video-info">
-                                <div class="video-title">${video.title}</div>
-                                <div class="video-meta">
-                                    ${video.views ? video.views + ' • ' : ''}${video.publishedTime || ''}
-                                </div>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-            
-            previewContainer.innerHTML = videosHTML;
+        function openChannel() {
+            document.getElementById('channelLink').click();
         }
 
-        function displayThumbnailFallback(channelId) {
-            const previewContainer = document.getElementById('channelPreview');
+        function decide(action) {
+            if (currentIndex === -1 || currentIndex >= channels.length) return;
             
-            // Create a grid of likely video thumbnails based on common patterns
-            const fallbackVideos = Array.from({ length: 6 }, (_, i) => ({
-                id: i,
-                label: `Video ${i + 1}`
-            }));
-            
-            const thumbnailsHTML = `
-                <div class="videos-grid">
-                    ${fallbackVideos.map(video => `
-                        <div class="video-card" onclick="openChannelInNewTab()">
-                            <div class="video-thumb">
-                                <img src="https://via.placeholder.com/320x180/282828/AAAAAA?text=${encodeURIComponent('Click to View Channel')}" 
-                                     alt="Channel preview">
-                            </div>
-                            <div class="video-info">
-                                <div class="video-title">Click any card to view channel on YouTube</div>
-                                <div class="video-meta">Recent uploads</div>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-            
-            previewContainer.innerHTML = thumbnailsHTML;
+            channels[currentIndex].verification_decision = action;
+            channels[currentIndex].verification_timestamp = new Date().toISOString();
+            save();
+            showChannel();
         }
 
-        function getChannelId(input) {
-            if (!input) return null;
-            if (input.includes('youtube.com/@')) {
-                return input.split('/@')[1].split('/')[0].split('?')[0];
-            }
-            if (input.includes('youtube.com/channel/')) {
-                return input.split('/channel/')[1].split('/')[0].split('?')[0];
-            }
-            if (input.startsWith('@')) {
-                return input;
-            }
-            return input;
-        }
-
-        // Handle actions
-        function handleAction(action) {
-            if (currentIndex === -1 || currentIndex >= channelsData.length) return;
-
-            // Update the channel's decision in the master array
-            channelsData[currentIndex].verification_decision = action;
-            channelsData[currentIndex].verification_timestamp = new Date().toISOString();
-
-            // Save immediately
-            saveData();
-
-            // Move to next unreviewed channel
-            showCurrentChannel();
-        }
-
-        // Show completion
         function showCompletion() {
             document.getElementById('mainContent').style.display = 'none';
             document.getElementById('completionScreen').style.display = 'block';
 
-            const stats = calculateStats();
-
-            document.getElementById('finalStats').innerHTML = `
-                <div class="final-stat-card">
-                    <div class="final-stat-number good">${stats.good}</div>
-                    <div class="final-stat-label">Good Matches</div>
+            const stats = calcStats();
+            document.getElementById('completionStats').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number good">${stats.good}</div>
+                    <div class="stat-label">Good Matches</div>
                 </div>
-                <div class="final-stat-card">
-                    <div class="final-stat-number bad">${stats.bad}</div>
-                    <div class="final-stat-label">Bad Matches</div>
+                <div class="stat-card">
+                    <div class="stat-number bad">${stats.bad}</div>
+                    <div class="stat-label">Bad Matches</div>
                 </div>
-                <div class="final-stat-card">
-                    <div class="final-stat-number review">${stats.review}</div>
-                    <div class="final-stat-label">Review Later</div>
+                <div class="stat-card">
+                    <div class="stat-number review">${stats.review}</div>
+                    <div class="stat-label">Review Later</div>
                 </div>
-                <div class="final-stat-card">
-                    <div class="final-stat-number" style="color: var(--yt-text)">${channelsData.length}</div>
-                    <div class="final-stat-label">Total Channels</div>
+                <div class="stat-card">
+                    <div class="stat-number" style="color:var(--yt-text)">${channels.length}</div>
+                    <div class="stat-label">Total</div>
                 </div>
             `;
         }
 
-        // Download the updated JSON with decisions
-        function downloadUpdatedJSON() {
-            const dataStr = JSON.stringify(channelsData, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `youtube_channels_verified_${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
+        function downloadJSON() {
+            const blob = new Blob([JSON.stringify(channels, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `youtube_verified_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
             URL.revokeObjectURL(url);
         }
 
         function downloadCSV() {
             let csv = 'Artist,Channel Title,Handle,URL,Decision,Timestamp\n';
-            
-            channelsData.forEach(channel => {
-                csv += `"${channel.artist || ''}","${channel.channel_title || ''}","${channel.subscribers || ''}","${channel.url || ''}","${channel.verification_decision || 'pending'}","${channel.verification_timestamp || ''}"\n`;
+            channels.forEach(c => {
+                csv += `"${c.artist || ''}","${c.channel_title || ''}","${c.subscribers || ''}","${c.url || ''}","${c.verification_decision || 'pending'}","${c.verification_timestamp || ''}"\n`;
             });
-            
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `youtube_channels_verified_${new Date().toISOString().split('T')[0]}.csv`;
-            link.click();
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `youtube_verified_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
             URL.revokeObjectURL(url);
         }
 
-        function resetSession() {
-            if (confirm('Load a new file? Current progress will be lost unless you download it first.')) {
+        function reset() {
+            if (confirm('Load new file? Download current progress first!')) {
                 localStorage.clear();
                 location.reload();
             }
         }
 
-        // File upload handling
-        function handleFileUpload(file) {
+        // File upload
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadArea.onclick = () => fileInput.click();
+        uploadArea.ondragover = (e) => { e.preventDefault(); uploadArea.style.background = 'rgba(255,0,0,0.1)'; };
+        uploadArea.ondragleave = () => { uploadArea.style.background = ''; };
+        uploadArea.ondrop = (e) => {
+            e.preventDefault();
+            uploadArea.style.background = '';
+            if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+        };
+
+        fileInput.onchange = (e) => {
+            if (e.target.files[0]) handleFile(e.target.files[0]);
+        };
+
+        function handleFile(file) {
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = (e) => {
                 try {
-                    const newData = JSON.parse(e.target.result);
-                    
-                    // Initialize verification fields if they don't exist
-                    channelsData = newData.map(channel => ({
-                        ...channel,
-                        verification_decision: channel.verification_decision || 'pending',
-                        verification_timestamp: channel.verification_timestamp || null
+                    const data = JSON.parse(e.target.result);
+                    channels = data.map(c => ({
+                        ...c,
+                        verification_decision: c.verification_decision || 'pending',
+                        verification_timestamp: c.verification_timestamp || null
                     }));
-                    
                     currentIndex = 0;
-                    saveData();
-                    showCurrentChannel();
+                    save();
+                    showChannel();
                 } catch (err) {
-                    alert('Error parsing JSON file. Please check the format.');
+                    alert('Error parsing JSON: ' + err.message);
                 }
             };
             reader.readAsText(file);
         }
 
-        // Drag and drop
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-
-        uploadArea.addEventListener('click', () => fileInput.click());
-
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragging');
-        });
-
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragging');
-        });
-
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragging');
-            const file = e.dataTransfer.files[0];
-            if (file && file.type === 'application/json') {
-                handleFileUpload(file);
-            }
-        });
-
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                handleFileUpload(file);
-            }
-        });
-
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
+        // Keyboard
+        document.onkeydown = (e) => {
             if (e.target.tagName === 'INPUT') return;
-            
-            switch(e.key) {
-                case '1': handleAction('good'); break;
-                case '2': handleAction('bad'); break;
-                case '3': handleAction('review_later'); break;
-                case '4': handleAction('skip'); break;
-            }
-        });
+            if (e.key === '1') decide('good');
+            else if (e.key === '2') decide('bad');
+            else if (e.key === '3') decide('review_later');
+            else if (e.key === '4') decide('skip');
+        };
 
-        // Initialize
-        function init() {
-            if (loadData()) {
-                showCurrentChannel();
-            }
-        }
-
-        init();
+        // Init
+        if (load()) showChannel();
     </script>
 </body>
 </html>
