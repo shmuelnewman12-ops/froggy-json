@@ -2,909 +2,896 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>YouTube Channel Verifier</title>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --yt-red: #FF0000;
-            --yt-dark: #0F0F0F;
-            --yt-darker: #0A0A0A;
-            --yt-gray: #272727;
-            --yt-text: #F1F1F1;
-            --yt-subtext: #AAAAAA;
-            --success: #00D856;
-            --warning: #FFA500;
-            --danger: #FF4444;
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: 'Syne', sans-serif;
-            background: var(--yt-darker);
-            color: var(--yt-text);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            padding: 10px;
+            overflow-x: hidden;
         }
 
-        /* Top Bar */
-        .top-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: var(--yt-dark);
-            border-bottom: 1px solid var(--yt-gray);
-            z-index: 100;
-        }
-
-        .progress-bar {
-            height: 4px;
-            background: var(--yt-red);
-            transition: width 0.4s;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 24px;
-            max-width: 1200px;
+        .container {
+            max-width: 100%;
             margin: 0 auto;
         }
 
-        .logo {
-            font-size: 20px;
-            font-weight: 800;
-            color: var(--yt-red);
+        @media (min-width: 768px) {
+            .container {
+                max-width: 800px;
+            }
+            body {
+                padding: 20px;
+            }
+        }
+
+        .header {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header.has-data {
+            display: none;
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+
+        .header p {
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .upload-area {
+            margin-top: 15px;
+        }
+
+        .upload-area input[type="file"] {
+            display: block;
+            margin-bottom: 10px;
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #667eea;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .upload-area textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 10px;
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            resize: vertical;
+        }
+
+        .upload-area button {
+            margin-top: 10px;
+            padding: 15px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            touch-action: manipulation;
+        }
+
+        .upload-area button:active {
+            background: #5568d3;
+            transform: scale(0.98);
+        }
+
+        .progress {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .progress.visible {
+            display: block;
+        }
+
+        .progress h3 {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            height: 25px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.85rem;
         }
 
         .stats {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
-            color: var(--yt-subtext);
-            display: flex;
-            gap: 16px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 10px;
         }
 
-        /* Main Content */
-        .main {
-            max-width: 1200px;
-            margin: 80px auto 0;
-            padding: 40px 24px;
+        @media (min-width: 480px) {
+            .stats {
+                grid-template-columns: repeat(6, 1fr);
+            }
         }
 
-        .artist-title {
-            font-size: 48px;
-            font-weight: 800;
+        .stat {
             text-align: center;
-            margin-bottom: 32px;
-            background: linear-gradient(135deg, #fff 0%, #aaa 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            padding: 10px 5px;
+            background: #f5f5f5;
+            border-radius: 5px;
         }
 
-        /* Channel Card */
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
         .channel-card {
-            background: var(--yt-dark);
-            border-radius: 16px;
-            padding: 32px;
-            margin-bottom: 24px;
-            border: 2px solid var(--yt-gray);
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .channel-card.active {
+            display: block;
         }
 
         .channel-header {
             display: flex;
-            gap: 24px;
-            margin-bottom: 24px;
-            align-items: start;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        @media (min-width: 480px) {
+            .channel-header {
+                flex-direction: row;
+                align-items: flex-start;
+            }
+        }
+
+        .avatar-container {
+            flex-shrink: 0;
         }
 
         .channel-avatar {
-            width: 120px;
-            height: 120px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
-            border: 3px solid var(--yt-red);
-        }
-
-        .channel-info h2 {
-            font-size: 28px;
-            margin-bottom: 8px;
-        }
-
-        .channel-handle {
-            color: var(--yt-subtext);
-            font-family: 'JetBrains Mono', monospace;
-            margin-bottom: 12px;
-        }
-
-        .open-btn {
-            display: inline-block;
-            padding: 10px 20px;
-            background: rgba(255, 0, 0, 0.1);
-            color: var(--yt-red);
-            text-decoration: none;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 0, 0, 0.3);
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .open-btn:hover {
-            background: rgba(255, 0, 0, 0.2);
-        }
-
-        /* Video Grid */
-        .videos-section {
-            margin-top: 24px;
-            padding-top: 24px;
-            border-top: 1px solid var(--yt-gray);
-        }
-
-        .section-title {
-            font-size: 16px;
-            font-weight: 700;
-            margin-bottom: 16px;
-        }
-
-        .videos-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 16px;
-        }
-
-        .video-card {
-            background: var(--yt-darker);
-            border-radius: 12px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 2px solid transparent;
-        }
-
-        .video-card:hover {
-            border-color: var(--yt-red);
-            transform: translateY(-4px);
-        }
-
-        .video-thumbnail {
-            width: 100%;
-            aspect-ratio: 16/9;
-            background: var(--yt-gray);
-            position: relative;
-        }
-
-        .video-thumbnail img {
-            width: 100%;
-            height: 100%;
             object-fit: cover;
+            border: 3px solid #667eea;
+            background: #f0f0f0;
         }
 
-        .video-info {
-            padding: 12px;
+        @media (min-width: 480px) {
+            .channel-avatar {
+                width: 120px;
+                height: 120px;
+            }
         }
 
-        .video-title {
-            font-size: 13px;
-            font-weight: 600;
-            line-height: 1.3;
-            margin-bottom: 4px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .video-date {
-            font-size: 11px;
-            color: var(--yt-subtext);
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        /* Action Buttons */
-        .actions {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-top: 24px;
-        }
-
-        .action-btn {
-            padding: 20px;
-            border: 2px solid;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
-            background: var(--yt-dark);
-            font-family: 'Syne', sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .action-btn:hover {
-            transform: translateY(-2px);
-        }
-
-        .action-btn.good {
-            border-color: var(--success);
-            color: var(--success);
-        }
-
-        .action-btn.good:hover {
-            background: var(--success);
-            color: var(--yt-dark);
-        }
-
-        .action-btn.bad {
-            border-color: var(--danger);
-            color: var(--danger);
-        }
-
-        .action-btn.bad:hover {
-            background: var(--danger);
-            color: var(--yt-dark);
-        }
-
-        .action-btn.review {
-            border-color: var(--warning);
-            color: var(--warning);
-        }
-
-        .action-btn.review:hover {
-            background: var(--warning);
-            color: var(--yt-dark);
-        }
-
-        .action-btn.skip {
-            border-color: var(--yt-gray);
-            color: var(--yt-subtext);
-        }
-
-        .btn-icon {
-            font-size: 24px;
-        }
-
-        .btn-key {
-            font-size: 10px;
-            opacity: 0.6;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        /* Loading */
-        .loading {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 40px;
-        }
-
-        .spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid var(--yt-gray);
-            border-top-color: var(--yt-red);
+        .avatar-loading {
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 24px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border: 3px solid #ccc;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        @media (min-width: 480px) {
+            .avatar-loading {
+                width: 120px;
+                height: 120px;
+            }
         }
 
-        .upload-area {
-            margin-top: 32px;
-            padding: 60px;
-            border: 3px dashed var(--yt-gray);
-            border-radius: 16px;
+        .upload-prompt {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #667eea;
+            border: 3px solid #5568d3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             text-align: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.85rem;
+            padding: 15px;
             cursor: pointer;
-            max-width: 500px;
+            transition: all 0.3s;
+            line-height: 1.3;
         }
 
-        .upload-area:hover {
-            border-color: var(--yt-red);
-            background: rgba(255, 0, 0, 0.05);
+        @media (min-width: 480px) {
+            .upload-prompt {
+                width: 120px;
+                height: 120px;
+                font-size: 0.95rem;
+            }
         }
 
-        input[type="file"] {
+        .upload-prompt:hover {
+            background: #5568d3;
+            transform: scale(1.05);
+        }
+
+        .upload-prompt:active {
+            transform: scale(0.95);
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .channel-info {
+            flex: 1;
+            text-align: center;
+        }
+
+        @media (min-width: 480px) {
+            .channel-info {
+                text-align: left;
+            }
+        }
+
+        .artist-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            word-wrap: break-word;
+        }
+
+        .channel-details {
+            color: #666;
+            line-height: 1.6;
+            font-size: 0.9rem;
+        }
+
+        .channel-details div {
+            margin-bottom: 5px;
+            word-wrap: break-word;
+        }
+
+        .channel-details strong {
+            color: #333;
+        }
+
+        .verification-methods {
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .verification-methods strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+
+        .method-status {
+            margin: 5px 0;
+            padding: 3px 0;
+        }
+
+        .method-success {
+            color: #28a745;
+        }
+
+        .method-fail {
+            color: #dc3545;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        @media (min-width: 480px) {
+            .buttons {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .btn {
+            padding: 18px 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+            touch-action: manipulation;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-good {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-bad {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-review {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .btn-skip {
+            background: #6c757d;
+            color: white;
+        }
+
+        .export-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
             display: none;
         }
 
-        /* Completion */
-        .completion {
-            text-align: center;
-            padding: 60px 20px;
+        .export-section.visible {
+            display: block;
         }
 
-        .completion-icon {
-            font-size: 100px;
-            margin-bottom: 24px;
-        }
-
-        .completion h1 {
-            font-size: 42px;
-            margin-bottom: 16px;
-            color: var(--yt-red);
-        }
-
-        .completion-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 16px;
-            margin: 32px 0;
-        }
-
-        .stat-card {
-            background: var(--yt-dark);
-            padding: 24px;
-            border-radius: 12px;
-        }
-
-        .stat-number {
-            font-size: 48px;
-            font-weight: 800;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .stat-number.good { color: var(--success); }
-        .stat-number.bad { color: var(--danger); }
-        .stat-number.review { color: var(--warning); }
-
-        .stat-label {
-            font-size: 12px;
-            color: var(--yt-subtext);
-            margin-top: 8px;
-        }
-
-        .primary-btn {
-            padding: 16px 32px;
-            background: var(--yt-red);
+        .export-section button {
+            padding: 18px 30px;
+            background: #28a745;
             color: white;
             border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
             cursor: pointer;
-            margin: 8px;
-            font-family: 'Syne', sans-serif;
+            width: 100%;
+            touch-action: manipulation;
         }
 
-        .primary-btn:hover {
-            background: #CC0000;
+        .export-section button:active {
+            background: #218838;
+            transform: scale(0.98);
         }
 
-        @media (max-width: 768px) {
-            .actions {
-                grid-template-columns: 1fr 1fr;
-            }
-            
-            .videos-grid {
-                grid-template-columns: 1fr;
-            }
+        .completion-message {
+            background: white;
+            padding: 30px 20px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+        }
 
-            .channel-header {
-                flex-direction: column;
-                text-align: center;
+        .completion-message.visible {
+            display: block;
+        }
+
+        .completion-message h2 {
+            color: #28a745;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .completion-message p {
+            font-size: 0.95rem;
+            color: #666;
+        }
+
+        .keyboard-hint {
+            display: none;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #999;
+            margin-top: 10px;
+        }
+
+        @media (min-width: 768px) {
+            .keyboard-hint {
+                display: block;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Top Bar -->
-    <div class="top-bar">
-        <div class="progress-bar" id="progressBar" style="width: 0%"></div>
-        <div class="header">
-            <div class="logo">YT VERIFIER</div>
+    <div class="container">
+        <div class="header" id="uploadHeader">
+            <h1>🎬 YouTube Channel Verifier</h1>
+            <p>Visual verification tool - see channel avatars and verify with one tap</p>
+            
+            <div class="upload-area" style="display: none;">
+                <input type="file" id="fileInput" accept=".json">
+                <textarea id="jsonPaste" placeholder="Or paste your JSON here..."></textarea>
+                <button onclick="loadData()">Load Channels</button>
+            </div>
+        </div>
+
+        <div class="progress" id="progress">
+            <h3>Progress</h3>
             <div class="stats">
-                <span id="progress">0 / 0</span>
-                <span style="color: var(--success)" id="good">✓ 0</span>
-                <span style="color: var(--danger)" id="bad">✗ 0</span>
-                <span style="color: var(--warning)" id="review">? 0</span>
+                <div class="stat">
+                    <div class="stat-value" id="currentIndex">0</div>
+                    <div class="stat-label">Current</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="totalChannels">0</div>
+                    <div class="stat-label">Total</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="goodCount">0</div>
+                    <div class="stat-label">✓ Good</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="badCount">0</div>
+                    <div class="stat-label">✗ Bad</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="reviewCount">0</div>
+                    <div class="stat-label">? Review</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="skipCount">0</div>
+                    <div class="stat-label">⏭ Skip</div>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%">
+                    <span id="progressText">0%</span>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Loading Screen -->
-    <div class="loading" id="loadingScreen">
-        <div class="spinner"></div>
-        <p>Loading...</p>
-        <div class="upload-area" id="uploadArea">
-            <div style="font-size: 48px; margin-bottom: 16px">📁</div>
-            <h3>Drop your JSON file here</h3>
-            <p style="color: var(--yt-subtext); margin-top: 8px; font-size: 14px">or click to browse</p>
-            <input type="file" id="fileInput" accept=".json">
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="main" id="mainContent" style="display: none">
-        <div class="artist-title" id="artistName">Artist Name</div>
-        
-        <div class="channel-card">
+        <div class="channel-card active" id="channelCard">
             <div class="channel-header">
-                <img id="channelAvatar" class="channel-avatar" src="" alt="Channel">
+                <div class="avatar-container">
+                    <div class="upload-prompt" id="uploadPrompt" onclick="triggerUpload()">
+                        Click here to upload JSON
+                    </div>
+                    <div class="avatar-loading" id="avatarLoading" style="display: none;"></div>
+                    <img class="channel-avatar" id="channelAvatar" style="display: none;" alt="Channel Avatar">
+                </div>
                 <div class="channel-info">
-                    <h2 id="channelTitle">Channel Name</h2>
-                    <div class="channel-handle" id="channelHandle">@handle</div>
-                    <a href="#" id="channelLink" class="open-btn" target="_blank">Open on YouTube →</a>
+                    <div class="artist-name" id="artistName">No Data Loaded</div>
+                    <div class="channel-details">
+                        <div><strong>Channel:</strong> <span id="channelTitle">-</span></div>
+                        <div><strong>Channel ID:</strong> <span id="channelId">-</span></div>
+                        <div><strong>Handle:</strong> <span id="channelHandle">-</span></div>
+                    </div>
                 </div>
             </div>
 
-            <div class="videos-section">
-                <div class="section-title">📺 Channel Preview</div>
-                <div class="videos-grid" id="videosGrid">
-                    <!-- Channel visuals will load here -->
-                </div>
+            <div class="verification-methods" id="methodsInfo" style="display: none;">
+                <strong>Avatar Loading Status:</strong>
+                <div class="method-status" id="method1">Method 1 (oEmbed): Trying...</div>
+                <div class="method-status" id="method2">Method 2 (Direct CDN): Trying...</div>
+                <div class="method-status" id="method3">Method 3 (Channel Page): Trying...</div>
+            </div>
+
+            <div class="buttons" style="display: none;" id="buttonContainer">
+                <button class="btn btn-good" onclick="markChannel('good')">✓ Good</button>
+                <button class="btn btn-bad" onclick="markChannel('bad')">✗ Bad</button>
+                <button class="btn btn-review" onclick="markChannel('review')">? Review</button>
+                <button class="btn btn-skip" onclick="markChannel('skip')">⏭ Skip</button>
+            </div>
+            
+            <div class="keyboard-hint" style="display: none;" id="keyboardHint">
+                💡 Desktop: Press 1/2/3/4 keys for faster verification
             </div>
         </div>
 
-        <div class="actions">
-            <button class="action-btn good" onclick="decide('good')">
-                <span class="btn-icon">✅</span>
-                <span>Good Match</span>
-                <span class="btn-key">Press 1</span>
-            </button>
-            <button class="action-btn bad" onclick="decide('bad')">
-                <span class="btn-icon">❌</span>
-                <span>Not a Match</span>
-                <span class="btn-key">Press 2</span>
-            </button>
-            <button class="action-btn review" onclick="decide('review_later')">
-                <span class="btn-icon">🤔</span>
-                <span>Review Later</span>
-                <span class="btn-key">Press 3</span>
-            </button>
-            <button class="action-btn skip" onclick="decide('skip')">
-                <span class="btn-icon">⏭️</span>
-                <span>Skip</span>
-                <span class="btn-key">Press 4</span>
-            </button>
+        <div class="completion-message" id="completionMessage">
+            <h2>🎉 All Channels Verified!</h2>
+            <p>You've reviewed all channels. Click below to download your results.</p>
         </div>
-    </div>
 
-    <!-- Completion Screen -->
-    <div class="completion" id="completionScreen" style="display: none">
-        <div class="completion-icon">🎉</div>
-        <h1>All Done!</h1>
-        <p style="color: var(--yt-subtext)">You've reviewed all channels</p>
-
-        <div class="completion-stats" id="completionStats"></div>
-
-        <button class="primary-btn" onclick="downloadJSON()">📥 Download Updated JSON</button>
-        <button class="primary-btn" onclick="downloadCSV()">📊 Download CSV</button>
-        <button class="primary-btn" onclick="reset()">🔄 Load New File</button>
+        <div class="export-section" id="exportSection">
+            <button onclick="exportResults()">📥 Download Verified Channels (JSON)</button>
+        </div>
     </div>
 
     <script>
-        let channels = [];
+        let originalChannels = [];
+        let workingChannels = [];
         let currentIndex = 0;
+        let stats = { good: 0, bad: 0, review: 0, skip: 0 };
+        const STORAGE_KEY = 'youtube_verifier_data';
+        const ORIGINAL_KEY = 'youtube_verifier_original';
 
-        function calcStats() {
-            return {
-                good: channels.filter(c => c.verification_decision === 'good').length,
-                bad: channels.filter(c => c.verification_decision === 'bad').length,
-                review: channels.filter(c => c.verification_decision === 'review_later').length,
-                pending: channels.filter(c => !c.verification_decision || c.verification_decision === 'pending').length
-            };
+        function triggerUpload() {
+            const uploadArea = document.querySelector('.upload-area');
+            uploadArea.style.display = 'block';
+            document.getElementById('uploadHeader').classList.remove('has-data');
+            document.getElementById('fileInput').click();
         }
 
-        function save() {
-            localStorage.setItem('ytChannels', JSON.stringify(channels));
-            localStorage.setItem('ytIndex', currentIndex.toString());
-        }
-
-        function load() {
-            const saved = localStorage.getItem('ytChannels');
-            if (saved) {
-                channels = JSON.parse(saved);
-                currentIndex = parseInt(localStorage.getItem('ytIndex') || '0');
-                return true;
+        function loadSavedProgress() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            const savedOriginal = localStorage.getItem(ORIGINAL_KEY);
+            
+            if (saved && savedOriginal) {
+                try {
+                    const data = JSON.parse(saved);
+                    originalChannels = JSON.parse(savedOriginal);
+                    workingChannels = data.channels;
+                    currentIndex = data.currentIndex || 0;
+                    stats = data.stats || { good: 0, bad: 0, review: 0, skip: 0 };
+                    
+                    document.getElementById('uploadHeader').classList.add('has-data');
+                    document.getElementById('uploadPrompt').style.display = 'none';
+                    document.getElementById('methodsInfo').style.display = 'block';
+                    document.getElementById('buttonContainer').style.display = 'grid';
+                    document.getElementById('keyboardHint').style.display = 'block';
+                    
+                    updateStats();
+                    document.getElementById('totalChannels').textContent = workingChannels.length;
+                    document.getElementById('progress').classList.add('visible');
+                    
+                    showChannel(currentIndex);
+                    return true;
+                } catch (error) {
+                    console.error('Failed to load saved progress:', error);
+                }
             }
             return false;
         }
 
-        function findNext() {
-            for (let i = currentIndex; i < channels.length; i++) {
-                if (!channels[i].verification_decision || channels[i].verification_decision === 'pending') {
-                    return i;
-                }
-            }
-            for (let i = 0; i < currentIndex; i++) {
-                if (!channels[i].verification_decision || channels[i].verification_decision === 'pending') {
-                    return i;
-                }
-            }
-            return -1;
+        function saveProgress() {
+            const data = {
+                channels: workingChannels,
+                currentIndex: currentIndex,
+                stats: stats
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            localStorage.setItem(ORIGINAL_KEY, JSON.stringify(originalChannels));
         }
 
-        function updateUI() {
-            const stats = calcStats();
-            const reviewed = stats.good + stats.bad + stats.review;
-            const progress = channels.length > 0 ? (reviewed / channels.length) * 100 : 0;
-            
-            document.getElementById('progressBar').style.width = progress + '%';
-            document.getElementById('progress').textContent = `${reviewed} / ${channels.length}`;
-            document.getElementById('good').textContent = `✓ ${stats.good}`;
-            document.getElementById('bad').textContent = `✗ ${stats.bad}`;
-            document.getElementById('review').textContent = `? ${stats.review}`;
+        function clearProgress() {
+            localStorage.removeItem(STORAGE_KEY);
+            localStorage.removeItem(ORIGINAL_KEY);
         }
 
-        function showChannel() {
-            currentIndex = findNext();
-            
-            if (currentIndex === -1) {
-                showCompletion();
+        function updateStats() {
+            document.getElementById('goodCount').textContent = stats.good;
+            document.getElementById('badCount').textContent = stats.bad;
+            document.getElementById('reviewCount').textContent = stats.review;
+            document.getElementById('skipCount').textContent = stats.skip;
+        }
+
+        async function loadData() {
+            const fileInput = document.getElementById('fileInput');
+            const jsonPaste = document.getElementById('jsonPaste');
+
+            let jsonText = '';
+
+            if (fileInput.files.length > 0) {
+                jsonText = await fileInput.files[0].text();
+            } else if (jsonPaste.value.trim()) {
+                jsonText = jsonPaste.value.trim();
+            } else {
+                alert('Please upload a file or paste JSON content');
                 return;
             }
 
-            const ch = channels[currentIndex];
-            
-            document.getElementById('loadingScreen').style.display = 'none';
-            document.getElementById('mainContent').style.display = 'block';
-            document.getElementById('completionScreen').style.display = 'none';
-            
-            document.getElementById('artistName').textContent = ch.artist || 'Unknown Artist';
-            document.getElementById('channelTitle').textContent = ch.channel_title || 'Unknown Channel';
-            document.getElementById('channelHandle').textContent = ch.subscribers || '@unknown';
-            
-            const url = ch.url || `https://youtube.com/${ch.subscribers}`;
-            document.getElementById('channelLink').href = url;
-            
-            // Avatar
-            const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(ch.channel_title || 'C')}&size=200&background=FF0000&color=fff&bold=true`;
-            document.getElementById('channelAvatar').src = avatar;
-            
-            // Load videos
-            loadVideos(ch);
-            
-            updateUI();
-            save();
-        }
-
-        function loadVideos(ch) {
-            const grid = document.getElementById('videosGrid');
-            grid.innerHTML = '<p style="text-align:center;color:var(--yt-subtext);padding:40px">Loading channel preview...</p>';
-            
-            const channelUrl = ch.url || `https://youtube.com/${ch.subscribers}`;
-            
-            // Try multiple methods to get channel avatar and info
-            tryFetchChannelAvatar(channelUrl, ch);
-        }
-
-        async function tryFetchChannelAvatar(channelUrl, ch) {
-            const grid = document.getElementById('videosGrid');
-            
-            // Method 1: Try noembed.com (gets thumbnail from any YouTube URL)
             try {
-                const response = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(channelUrl)}`);
-                const data = await response.json();
+                const loadedData = JSON.parse(jsonText);
                 
-                if (data.thumbnail_url) {
-                    // Update the main avatar with real YouTube avatar
-                    document.getElementById('channelAvatar').src = data.thumbnail_url;
-                    
-                    // Show channel preview images
-                    displayChannelPreviews(data, channelUrl);
-                    return;
-                }
-            } catch (e) {
-                console.log('noembed failed:', e);
-            }
-            
-            // Method 2: Try to construct YouTube avatar URL directly
-            const handle = ch.subscribers?.replace('@', '') || '';
-            
-            // YouTube avatar URLs follow patterns
-            const avatarUrls = [
-                `https://yt3.ggpht.com/ytc/${handle}`,
-                `https://yt3.googleusercontent.com/ytc/${handle}`,
-            ];
-            
-            // Try each URL
-            let foundAvatar = false;
-            for (const url of avatarUrls) {
-                try {
-                    const img = new Image();
-                    img.crossOrigin = 'anonymous';
-                    await new Promise((resolve, reject) => {
-                        img.onload = () => { 
-                            document.getElementById('channelAvatar').src = url;
-                            foundAvatar = true;
-                            resolve(); 
-                        };
-                        img.onerror = reject;
-                        img.src = url;
-                    });
-                    if (foundAvatar) break;
-                } catch (e) {
-                    continue;
-                }
-            }
-            
-            // Method 3: Use YouTube's public JSON endpoint
-            try {
-                const jsonUrl = `${channelUrl}/about`;
-                const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(jsonUrl)}`);
-                const data = await response.json();
-                const html = data.contents;
+                originalChannels = JSON.parse(JSON.stringify(loadedData));
                 
-                // Extract avatar from HTML
-                const avatarMatch = html.match(/"avatar":{"thumbnails":\[{"url":"([^"]+)"/);
-                if (avatarMatch && avatarMatch[1]) {
-                    const avatarUrl = avatarMatch[1].replace(/\\u0026/g, '&');
-                    document.getElementById('channelAvatar').src = avatarUrl;
-                    foundAvatar = true;
-                }
-                
-                // Extract banner/header
-                const bannerMatch = html.match(/"banner":{"thumbnails":\[{"url":"([^"]+)"/);
-                if (bannerMatch && bannerMatch[1]) {
-                    const bannerUrl = bannerMatch[1].replace(/\\u0026/g, '&');
-                    displayChannelPreviewsWithBanner(avatarMatch?.[1]?.replace(/\\u0026/g, '&'), bannerUrl);
-                    return;
-                }
-            } catch (e) {
-                console.log('JSON endpoint failed:', e);
-            }
-            
-            // Fallback: Show channel preview embeds
-            displayChannelPreviews(null, channelUrl);
-        }
-
-        function displayChannelPreviews(data, channelUrl) {
-            const grid = document.getElementById('videosGrid');
-            const avatar = data?.thumbnail_url || document.getElementById('channelAvatar').src;
-            
-            // Create visual previews showing the channel in different contexts
-            grid.innerHTML = `
-                <div class="video-card">
-                    <div class="video-thumbnail">
-                        <img src="${avatar}" alt="Channel Avatar" style="object-fit: contain; padding: 20px; background: #282828;">
-                    </div>
-                    <div class="video-info">
-                        <div class="video-title">Channel Avatar</div>
-                        <div class="video-date">Profile Picture</div>
-                    </div>
-                </div>
-                
-                <div class="video-card" onclick="window.open('${channelUrl}', '_blank')">
-                    <div class="video-thumbnail">
-                        <img src="${avatar}" alt="Channel" style="object-fit: cover; filter: brightness(0.8);">
-                    </div>
-                    <div class="video-info">
-                        <div class="video-title">View Full Channel</div>
-                        <div class="video-date">Click to open YouTube</div>
-                    </div>
-                </div>
-                
-                <div class="video-card">
-                    <div class="video-thumbnail" style="background: linear-gradient(135deg, #FF0000 0%, #CC0000 100%); display: flex; align-items: center; justify-content: center;">
-                        <img src="${avatar}" alt="Channel" style="width: 80%; height: 80%; object-fit: contain; border-radius: 50%; border: 3px solid white;">
-                    </div>
-                    <div class="video-info">
-                        <div class="video-title">Profile Style 1</div>
-                        <div class="video-date">Red background</div>
-                    </div>
-                </div>
-                
-                <div class="video-card">
-                    <div class="video-thumbnail" style="background: linear-gradient(135deg, #282828 0%, #181818 100%); display: flex; align-items: center; justify-content: center;">
-                        <img src="${avatar}" alt="Channel" style="width: 80%; height: 80%; object-fit: contain; border-radius: 50%; border: 3px solid white;">
-                    </div>
-                    <div class="video-info">
-                        <div class="video-title">Profile Style 2</div>
-                        <div class="video-date">Dark background</div>
-                    </div>
-                </div>
-                
-                <div class="video-card">
-                    <div class="video-thumbnail" style="background: white; display: flex; align-items: center; justify-content: center;">
-                        <img src="${avatar}" alt="Channel" style="width: 80%; height: 80%; object-fit: contain; border-radius: 50%; border: 3px solid #FF0000;">
-                    </div>
-                    <div class="video-info">
-                        <div class="video-title">Profile Style 3</div>
-                        <div class="video-date">Light background</div>
-                    </div>
-                </div>
-                
-                <div class="video-card">
-                    <div class="video-thumbnail" style="background: linear-gradient(45deg, #FF0000 0%, #0000FF 100%); display: flex; align-items: center; justify-content: center;">
-                        <img src="${avatar}" alt="Channel" style="width: 90%; height: 90%; object-fit: contain;">
-                    </div>
-                    <div class="video-info">
-                        <div class="video-title">Full Size Preview</div>
-                        <div class="video-date">Large view</div>
-                    </div>
-                </div>
-            `;
-        }
-
-        function displayChannelPreviewsWithBanner(avatar, banner) {
-            const grid = document.getElementById('videosGrid');
-            
-            grid.innerHTML = `
-                <div class="video-card" style="grid-column: 1 / -1;">
-                    <div class="video-thumbnail" style="height: 150px;">
-                        <img src="${banner}" alt="Channel Banner" style="object-fit: cover;">
-                    </div>
-                    <div class="video-info">
-                        <div class="video-title">Channel Banner</div>
-                        <div class="video-date">Header Image</div>
-                    </div>
-                </div>
-                
-                <div class="video-card">
-                    <div class="video-thumbnail">
-                        <img src="${avatar}" alt="Channel Avatar" style="object-fit: contain; padding: 20px; background: #282828;">
-                    </div>
-                    <div class="video-info">
-                        <div class="video-title">Channel Avatar</div>
-                        <div class="video-date">Profile Picture</div>
-                    </div>
-                </div>
-                
-                <div class="video-card">
-                    <div class="video-thumbnail" style="background: linear-gradient(135deg, #FF0000 0%, #CC0000 100%); display: flex; align-items: center; justify-content: center;">
-                        <img src="${avatar}" alt="Channel" style="width: 80%; height: 80%; object-fit: contain; border-radius: 50%; border: 3px solid white;">
-                    </div>
-                    <div class="video-info">
-                        <div class="video-title">Large Avatar</div>
-                        <div class="video-date">Circular style</div>
-                    </div>
-                </div>
-                
-                <div class="video-card">
-                    <div class="video-thumbnail" style="position: relative;">
-                        <img src="${banner}" alt="Banner" style="object-fit: cover; filter: brightness(0.6);">
-                        <img src="${avatar}" alt="Avatar" style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); width: 50px; height: 50px; border-radius: 50%; border: 3px solid white; object-fit: cover;">
-                    </div>
-                    <div class="video-info">
-                        <div class="video-title">Combined View</div>
-                        <div class="video-date">Banner + Avatar</div>
-                    </div>
-                </div>
-            `;
-        }
-
-        function formatDate(dateStr) {
-            try {
-                const date = new Date(dateStr);
-                const days = Math.floor((new Date() - date) / (1000 * 60 * 60 * 24));
-                if (days === 0) return 'Today';
-                if (days === 1) return 'Yesterday';
-                if (days < 7) return `${days} days ago`;
-                if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
-                if (days < 365) return `${Math.floor(days / 30)} months ago`;
-                return `${Math.floor(days / 365)} years ago`;
-            } catch {
-                return '';
-            }
-        }
-
-        function decide(action) {
-            if (currentIndex === -1 || currentIndex >= channels.length) return;
-            
-            channels[currentIndex].verification_decision = action;
-            channels[currentIndex].verification_timestamp = new Date().toISOString();
-            save();
-            showChannel();
-        }
-
-        function showCompletion() {
-            document.getElementById('mainContent').style.display = 'none';
-            document.getElementById('completionScreen').style.display = 'block';
-
-            const stats = calcStats();
-            document.getElementById('completionStats').innerHTML = `
-                <div class="stat-card">
-                    <div class="stat-number good">${stats.good}</div>
-                    <div class="stat-label">Good Matches</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number bad">${stats.bad}</div>
-                    <div class="stat-label">Bad Matches</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number review">${stats.review}</div>
-                    <div class="stat-label">Review Later</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" style="color:var(--yt-text)">${channels.length}</div>
-                    <div class="stat-label">Total</div>
-                </div>
-            `;
-        }
-
-        function downloadJSON() {
-            const blob = new Blob([JSON.stringify(channels, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `youtube_verified_${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function downloadCSV() {
-            let csv = 'Artist,Channel Title,Handle,URL,Decision,Timestamp\n';
-            channels.forEach(c => {
-                csv += `"${c.artist || ''}","${c.channel_title || ''}","${c.subscribers || ''}","${c.url || ''}","${c.verification_decision || 'pending'}","${c.verification_timestamp || ''}"\n`;
-            });
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `youtube_verified_${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function reset() {
-            if (confirm('Load new file? Download current progress first!')) {
-                localStorage.clear();
-                location.reload();
-            }
-        }
-
-        // File upload
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-
-        uploadArea.onclick = () => fileInput.click();
-        uploadArea.ondragover = (e) => { e.preventDefault(); uploadArea.style.background = 'rgba(255,0,0,0.1)'; };
-        uploadArea.ondragleave = () => { uploadArea.style.background = ''; };
-        uploadArea.ondrop = (e) => {
-            e.preventDefault();
-            uploadArea.style.background = '';
-            if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
-        };
-
-        fileInput.onchange = (e) => {
-            if (e.target.files[0]) handleFile(e.target.files[0]);
-        };
-
-        function handleFile(file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    channels = data.map(c => ({
-                        ...c,
-                        verification_decision: c.verification_decision || 'pending',
-                        verification_timestamp: c.verification_timestamp || null
+                workingChannels = loadedData
+                    .filter(ch => ch.status === 'found' && ch.channel_id)
+                    .map(ch => ({
+                        ...ch,
+                        verification_decision: null,
+                        channel_url: null,
+                        avatar_url: null,
+                        avatar_method: null
                     }));
-                    currentIndex = 0;
-                    save();
-                    showChannel();
-                } catch (err) {
-                    alert('Error parsing JSON: ' + err.message);
+                
+                if (workingChannels.length === 0) {
+                    alert('No channels with "found" status in the JSON');
+                    return;
                 }
-            };
-            reader.readAsText(file);
+
+                currentIndex = 0;
+                stats = { good: 0, bad: 0, review: 0, skip: 0 };
+                
+                document.getElementById('uploadHeader').classList.add('has-data');
+                document.getElementById('uploadPrompt').style.display = 'none';
+                document.getElementById('methodsInfo').style.display = 'block';
+                document.getElementById('buttonContainer').style.display = 'grid';
+                document.getElementById('keyboardHint').style.display = 'block';
+                
+                saveProgress();
+                
+                document.getElementById('progress').classList.add('visible');
+                document.getElementById('totalChannels').textContent = workingChannels.length;
+                
+                showChannel(0);
+            } catch (error) {
+                alert('Invalid JSON: ' + error.message);
+            }
         }
 
-        // Keyboard
-        document.onkeydown = (e) => {
-            if (e.target.tagName === 'INPUT') return;
-            if (e.key === '1') decide('good');
-            else if (e.key === '2') decide('bad');
-            else if (e.key === '3') decide('review_later');
-            else if (e.key === '4') decide('skip');
-        };
+        async function showChannel(index) {
+            if (index >= workingChannels.length) {
+                document.getElementById('channelCard').classList.remove('active');
+                document.getElementById('completionMessage').classList.add('visible');
+                document.getElementById('exportSection').classList.add('visible');
+                return;
+            }
 
-        // Init
-        if (load()) showChannel();
+            const channel = workingChannels[index];
+            currentIndex = index;
+
+            document.getElementById('currentIndex').textContent = index + 1;
+            const progressPercent = ((index) / workingChannels.length) * 100;
+            document.getElementById('progressFill').style.width = progressPercent + '%';
+            document.getElementById('progressText').textContent = Math.round(progressPercent) + '%';
+
+            document.getElementById('channelCard').classList.add('active');
+            
+            document.getElementById('artistName').textContent = channel.artist || 'Unknown Artist';
+            document.getElementById('channelTitle').textContent = channel.channel_title || 'N/A';
+            document.getElementById('channelId').textContent = channel.channel_id;
+            document.getElementById('channelHandle').textContent = channel.subscribers || 'N/A';
+
+            document.getElementById('avatarLoading').style.display = 'block';
+            document.getElementById('channelAvatar').style.display = 'none';
+            document.getElementById('channelAvatar').src = '';
+
+            document.getElementById('method1').textContent = 'Method 1 (oEmbed): Trying...';
+            document.getElementById('method1').className = 'method-status';
+            document.getElementById('method2').textContent = 'Method 2 (Direct CDN): Trying...';
+            document.getElementById('method2').className = 'method-status';
+            document.getElementById('method3').textContent = 'Method 3 (Channel Page): Trying...';
+            document.getElementById('method3').className = 'method-status';
+
+            const avatarData = await loadAvatar(channel.channel_id);
+            
+            if (avatarData) {
+                channel.avatar_url = avatarData.url;
+                channel.avatar_method = avatarData.method;
+            }
+        }
+
+        async function loadAvatar(channelId) {
+            let avatarUrl = null;
+            let successMethod = null;
+
+            try {
+                const oEmbedUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/channel/${channelId}&format=json`;
+                const response = await fetch(oEmbedUrl);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.thumbnail_url) {
+                        avatarUrl = data.thumbnail_url.replace('s48', 's176');
+                        successMethod = 'oembed';
+                        document.getElementById('method1').textContent = 'Method 1 (oEmbed): ✓ Success';
+                        document.getElementById('method1').className = 'method-status method-success';
+                    }
+                }
+            } catch (error) {
+                document.getElementById('method1').textContent = 'Method 1 (oEmbed): ✗ Failed (CORS or network)';
+                document.getElementById('method1').className = 'method-status method-fail';
+            }
+
+            if (!avatarUrl) {
+                const patterns = [
+                    `https://yt3.googleusercontent.com/ytc/${channelId}=s176-c-k-c0x00ffffff-no-rj`,
+                    `https://yt3.googleusercontent.com/${channelId}=s176-c-k-c0x00ffffff-no-rj`,
+                ];
+
+                for (const pattern of patterns) {
+                    try {
+                        const testImg = new Image();
+                        testImg.src = pattern;
+                        
+                        await new Promise((resolve) => {
+                            testImg.onload = () => {
+                                avatarUrl = pattern;
+                                successMethod = 'cdn';
+                                document.getElementById('method2').textContent = 'Method 2 (Direct CDN): ✓ Success';
+                                document.getElementById('method2').className = 'method-status method-success';
+                                resolve();
+                            };
+                            testImg.onerror = () => resolve();
+                            setTimeout(resolve, 1000);
+                        });
+
+                        if (avatarUrl) break;
+                    } catch (error) {
+                    }
+                }
+
+                if (!avatarUrl) {
+                    document.getElementById('method2').textContent = 'Method 2 (Direct CDN): ✗ Pattern not found';
+                    document.getElementById('method2').className = 'method-status method-fail';
+                }
+            } else {
+                document.getElementById('method2').textContent = 'Method 2 (Direct CDN): Skipped (Method 1 worked)';
+                document.getElementById('method2').className = 'method-status';
+            }
+
+            if (!avatarUrl) {
+                try {
+                    const proxyUrl = 'https://api.allorigins.win/raw?url=';
+                    const channelUrl = `https://www.youtube.com/channel/${channelId}`;
+                    const response = await fetch(proxyUrl + encodeURIComponent(channelUrl));
+                    
+                    if (response.ok) {
+                        const html = await response.text();
+                        
+                        const avatarMatch = html.match(/"avatar":\s*\{"thumbnails":\s*\[\{"url":"([^"]+)"/);
+                        if (avatarMatch && avatarMatch[1]) {
+                            avatarUrl = avatarMatch[1].replace('s48', 's176');
+                            successMethod = 'scrape';
+                            document.getElementById('method3').textContent = 'Method 3 (Channel Page): ✓ Success';
+                            document.getElementById('method3').className = 'method-status method-success';
+                        }
+                    }
+                } catch (error) {
+                    document.getElementById('method3').textContent = 'Method 3 (Channel Page): ✗ Failed';
+                    document.getElementById('method3').className = 'method-status method-fail';
+                }
+            } else {
+                document.getElementById('method3').textContent = 'Method 3 (Channel Page): Skipped (earlier method worked)';
+                document.getElementById('method3').className = 'method-status';
+            }
+
+            const avatarImg = document.getElementById('channelAvatar');
+            const avatarLoading = document.getElementById('avatarLoading');
+
+            if (avatarUrl) {
+                avatarImg.src = avatarUrl;
+                avatarImg.onload = () => {
+                    avatarLoading.style.display = 'none';
+                    avatarImg.style.display = 'block';
+                };
+                avatarImg.onerror = ()o => {
+                    avatarLoading.style.display = 'none';
+                    avatarImg.style.display = 'block';
+                    avatarImg.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect fill="%23ccc" width="120" height="120"/><text x="50%" y="50%" fill="%23666" font-size="14" text-anchor="middle" dy=".3em">No Avatar</text></svg>';
+                };
+            } else {
+                avatarLoading.style.display = 'none';
+                avatarImg.style.display = 'block';
+                avatarImg.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect fill="%23ccc" width="120" height="120"/><text x="50%" y="50%" fill="%23666" font-size="14" text-anchor="middle" dy=".3em">No Avatar</text></svg>';
+            }
+
+            return avatarUrl ? { url: avatarUrl, method: successMethod } : null;
+        }
+
+        function markChannel(decision) {
+            const channel = workingChannels[currentIndex];
+            
+            channel.verification_decision = decision;
+            
+            if (decision === 'good') {
+                channel.channel_url = `https://www.youtube.com/channel/${channel.channel_id}`;
+            }
+
+            stats[decision]++;
+            updateStats();
+
+            saveProgress();
+
+            showChannel(currentIndex + 1);
+        }
+
+        function exportResults() {
+            const output = originalChannels.map(original => {
+                const verified = workingChannels.find(w => 
+                    w.channel_id === original.channel_id && 
+                    w.artist === original.artist
+                );
+                
+                if (verified && verified.verification_decision) {
+                    return {
+                        ...original,
+                        verification_decision: verified.verification_decision,
+                        channel_url: verified.channel_url || null,
+                        avatar_url: verified.avatar_url || null,
+                        avatar_method: verified.avatar_method || null
+                    };
+                }
+                
+                return original;
+            });
+            
+            const dataStr = JSON.stringify(output, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'channels_verified_' + new Date().toISOString().slice(0,10) + '.json';
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            clearProgress();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('channelCard').classList.contains('active')) {
+                if (e.key === '1') markChannel('good');
+                if (e.key === '2') markChannel('bad');
+                if (e.key === '3') markChannel('review');
+                if (e.key === '4') markChannel('skip');
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            if (loadSavedProgress()) {
+                console.log('Resumed saved progress from previous session');
+            }
+        });
     </script>
 </body>
 </html>
